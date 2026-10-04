@@ -75,8 +75,6 @@ Walk up the red carpet. Each exhibit opens on its own when you step right beside
 | Giant handheld console | "How I built this": how this website was made |
 | Eli Lilly console | My work as an AI Fellow at Eli Lilly |
 
-After you've opened both project dashboards, my contact card appears.
-
 ---
 
 ## Changing the content

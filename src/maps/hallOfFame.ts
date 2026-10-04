@@ -32,25 +32,12 @@ const props: Prop[] = [
   { kind: 'rollsRoyce', ...CAR },
   { kind: 'dsConsole', ...DS },
 ]
-const PROJECTS = [RR_DASHBOARD, PIANO_DASHBOARD]
-
-// Once the visitor has opened every project, Tyler's contact card pops up (once per visit).
-const viewed = new Set<string>()
-let contactShown = false
-async function viewProject(ctx: ScriptContext, url: string) {
-  await ctx.openContent(`dashboard:${url}`)
-  viewed.add(url)
-  if (contactShown || !PROJECTS.every((p) => viewed.has(p))) return
-  contactShown = true
-  await ctx.say('That\'s every project! Here\'s how to reach Tyler.')
-  await ctx.openContent('contact')
-}
 
 const EXHIBITS: { at: typeof CAR; open: (ctx: ScriptContext) => Promise<void> }[] = [
   { at: PODIUM, open: (ctx) => ctx.openContent('photo:/material/about/volleyball.jpg') },
   { at: PETE, open: (ctx) => ctx.openContent('photo:/material/halloffame/purdue-graduation.jpg') },
-  { at: PIANO, open: (ctx) => viewProject(ctx, PIANO_DASHBOARD) },
-  { at: CAR, open: (ctx) => viewProject(ctx, RR_DASHBOARD) },
+  { at: PIANO, open: (ctx) => ctx.openContent(`dashboard:${PIANO_DASHBOARD}`) },
+  { at: CAR, open: (ctx) => ctx.openContent(`dashboard:${RR_DASHBOARD}`) },
   { at: DS, open: (ctx) => ctx.openContent('exhibit:pokeme') },
   { at: LILLY, open: (ctx) => ctx.openContent('exhibit:lilly') },
 ]
