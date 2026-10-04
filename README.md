@@ -10,7 +10,7 @@ holds my projects, work, and milestones.
 You don't have to play to get the essentials. The first screen is my **Trainer Profile**,
 with buttons for my résumé, the Hall of Fame, LinkedIn, and GitHub.
 
-![The Trainer Profile, the first thing visitors see](public/og-title.png)
+![The Trainer Profile, the first thing visitors see](public/og-preview.png)
 
 ---
 
@@ -93,7 +93,7 @@ the game's code.
 | My email, LinkedIn, and GitHub links | The `contact` entry in `src/data/content.json` |
 | The volleyball highlight videos | `public/videos/`, listed in the `highlights` entry of `src/data/content.json` |
 | The project dashboards | `public/piano-hand-project/` and `public/rolls royce data synthesizer project/` |
-| The link preview shown when the site is shared | Replace `public/og-title.png` (1200 × 630 pixels) |
+| The link preview shown when the site is shared | Replace `public/og-preview.png` (1200 × 630 pixels) |
 
 After editing, check your change by running the site on your computer (next section).
 
@@ -126,8 +126,8 @@ The finished website is a folder of ordinary files, so any static host works.
    - **Output folder:** `dist`
 3. Deploy. You'll get a web address within a minute or two.
 4. **One last step:** in `index.html`, change the two preview-image lines
-   (`og:image` and `twitter:image`) from `/og-title.png` to the full address, for example
-   `https://your-site.vercel.app/og-title.png`. LinkedIn and Slack need the full address to
+   (`og:image` and `twitter:image`) from `/og-preview.png` to the full address, for example
+   `https://your-site.vercel.app/og-preview.png`. LinkedIn and Slack need the full address to
    show the preview picture when the link is shared.
 
 To build the final files yourself without publishing, run `npm run build`. They appear in `dist/`.
