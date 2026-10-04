@@ -10,7 +10,7 @@ holds my projects, work, and milestones.
 You don't have to play to get the essentials. The first screen is my **Trainer Profile**,
 with buttons for my résumé, the Hall of Fame, LinkedIn, and GitHub.
 
-![The Trainer Profile, the first thing visitors see](public/og-title.png)
+![PokéMe: Tyler Kei's Portfolio Adventure](public/og-title.png)
 
 ---
 
