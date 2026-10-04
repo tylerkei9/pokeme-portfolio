@@ -1,0 +1,246 @@
+[
+  {
+    "key": "hotcrossbuns",
+    "label": "Hot Cross Buns"
+  },
+  {
+    "key": "hbd",
+    "label": "Happy Birthday"
+  },
+  {
+    "key": "twinkletwinkle",
+    "label": "Twinkle Twinkle Little Star"
+  },
+  {
+    "key": "maryhadlamb",
+    "label": "Mary Had a Little Lamb"
+  },
+  {
+    "key": "starspanbanner",
+    "label": "Star-Spangled Banner"
+  },
+  {
+    "key": "fuyunohanashi1",
+    "label": "Fuyu no Hanashi"
+  },
+  {
+    "key": "odetojoy",
+    "label": "Ode to Joy"
+  },
+  {
+    "key": "furelise",
+    "label": "Fur Elise (opening)"
+  },
+  {
+    "key": "rowrowboat",
+    "label": "Row, Row, Row Your Boat"
+  },
+  {
+    "key": "scalerun",
+    "label": "C Major Scale Run"
+  },
+  {
+    "key": "jinglebells",
+    "label": "Jingle Bells"
+  },
+  {
+    "key": "leapstresstest",
+    "label": "Octave Leap Stress Test"
+  },
+  {
+    "key": "frerejacques",
+    "label": "Frere Jacques"
+  },
+  {
+    "key": "scale_run_c",
+    "label": "Scale Run in C"
+  },
+  {
+    "key": "scale_run_csharp",
+    "label": "Scale Run in C#"
+  },
+  {
+    "key": "scale_run_d",
+    "label": "Scale Run in D"
+  },
+  {
+    "key": "scale_run_dsharp",
+    "label": "Scale Run in D#"
+  },
+  {
+    "key": "scale_run_e",
+    "label": "Scale Run in E"
+  },
+  {
+    "key": "scale_run_f",
+    "label": "Scale Run in F"
+  },
+  {
+    "key": "scale_run_fsharp",
+    "label": "Scale Run in F#"
+  },
+  {
+    "key": "scale_run_g",
+    "label": "Scale Run in G"
+  },
+  {
+    "key": "scale_run_gsharp",
+    "label": "Scale Run in G#"
+  },
+  {
+    "key": "scale_run_a",
+    "label": "Scale Run in A"
+  },
+  {
+    "key": "scale_run_asharp",
+    "label": "Scale Run in A#"
+  },
+  {
+    "key": "scale_run_b",
+    "label": "Scale Run in B"
+  },
+  {
+    "key": "arpeggio_c",
+    "label": "Arpeggio in C"
+  },
+  {
+    "key": "arpeggio_csharp",
+    "label": "Arpeggio in C#"
+  },
+  {
+    "key": "arpeggio_d",
+    "label": "Arpeggio in D"
+  },
+  {
+    "key": "arpeggio_dsharp",
+    "label": "Arpeggio in D#"
+  },
+  {
+    "key": "arpeggio_e",
+    "label": "Arpeggio in E"
+  },
+  {
+    "key": "arpeggio_f",
+    "label": "Arpeggio in F"
+  },
+  {
+    "key": "arpeggio_fsharp",
+    "label": "Arpeggio in F#"
+  },
+  {
+    "key": "arpeggio_g",
+    "label": "Arpeggio in G"
+  },
+  {
+    "key": "arpeggio_gsharp",
+    "label": "Arpeggio in G#"
+  },
+  {
+    "key": "arpeggio_a",
+    "label": "Arpeggio in A"
+  },
+  {
+    "key": "arpeggio_asharp",
+    "label": "Arpeggio in A#"
+  },
+  {
+    "key": "arpeggio_b",
+    "label": "Arpeggio in B"
+  },
+  {
+    "key": "waltz_figure_c",
+    "label": "Broken Chord in C"
+  },
+  {
+    "key": "waltz_figure_csharp",
+    "label": "Broken Chord in C#"
+  },
+  {
+    "key": "waltz_figure_d",
+    "label": "Broken Chord in D"
+  },
+  {
+    "key": "waltz_figure_dsharp",
+    "label": "Broken Chord in D#"
+  },
+  {
+    "key": "waltz_figure_e",
+    "label": "Broken Chord in E"
+  },
+  {
+    "key": "waltz_figure_f",
+    "label": "Broken Chord in F"
+  },
+  {
+    "key": "waltz_figure_fsharp",
+    "label": "Broken Chord in F#"
+  },
+  {
+    "key": "waltz_figure_g",
+    "label": "Broken Chord in G"
+  },
+  {
+    "key": "waltz_figure_gsharp",
+    "label": "Broken Chord in G#"
+  },
+  {
+    "key": "waltz_figure_a",
+    "label": "Broken Chord in A"
+  },
+  {
+    "key": "waltz_figure_asharp",
+    "label": "Broken Chord in A#"
+  },
+  {
+    "key": "waltz_figure_b",
+    "label": "Broken Chord in B"
+  },
+  {
+    "key": "leap_study_minor3rd",
+    "label": "Leap Study (minor3rd)"
+  },
+  {
+    "key": "leap_study_perfect5th",
+    "label": "Leap Study (perfect5th)"
+  },
+  {
+    "key": "leap_study_octave",
+    "label": "Leap Study (octave)"
+  },
+  {
+    "key": "leap_study_octave_plus_4th",
+    "label": "Leap Study (octave plus 4th)"
+  },
+  {
+    "key": "leap_study_two_octaves",
+    "label": "Leap Study (two octaves)"
+  },
+  {
+    "key": "trill_csharp",
+    "label": "Black Key Trill (C#)"
+  },
+  {
+    "key": "trill_dsharp",
+    "label": "Black Key Trill (D#)"
+  },
+  {
+    "key": "trill_fsharp",
+    "label": "Black Key Trill (F#)"
+  },
+  {
+    "key": "trill_gsharp",
+    "label": "Black Key Trill (G#)"
+  },
+  {
+    "key": "trill_asharp",
+    "label": "Black Key Trill (A#)"
+  },
+  {
+    "key": "repeated_notes_fast",
+    "label": "Repeated Notes (fast)"
+  },
+  {
+    "key": "repeated_notes_moderate",
+    "label": "Repeated Notes (moderate)"
+  }
+]

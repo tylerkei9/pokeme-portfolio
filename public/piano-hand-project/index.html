@@ -1,0 +1,1759 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hand Position Trellis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --surface-page:   #eef0f4;
+    --surface-card:   #f8f9fb;
+    --surface-sunken: #e6e8ee;
+    --text-primary:   #10131c;
+    --text-secondary: #4c5266;
+    --text-muted:     #7a8096;
+    --border:         rgba(16,19,28,0.10);
+    --border-strong:  rgba(16,19,28,0.20);
+    --grid:           #dcdfe8;
+    --baseline:       #b8bdcc;
+    --accent:         #2f8797;
+    --accent-soft:    #d7eef1;
+    --path-gold:      #c97a4a;
+    --path-gold-soft: #f7ebe0;
+    --good:           #5c8f57;
+    --purple:         #8b74ad;
+    --purple-soft:    #ece4f5;
+    --critical:       #b5524a;
+    --critical-soft:  #fbe4e1;
+    --seq-1: #d7eef1; --seq-2: #aedbe1; --seq-3: #82c6cf;
+    --seq-4: #57b0bc; --seq-5: #3a94a1; --seq-6: #2a7482; --seq-7: #1a4d57;
+    --shadow: 0 1px 2px rgba(16,19,28,0.06), 0 8px 24px rgba(16,19,28,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-page:   #0a0d14;
+      --surface-card:   #141926;
+      --surface-sunken: #0f131d;
+      --text-primary:   #eef1f8;
+      --text-secondary: #9aa1b8;
+      --text-muted:     #656d84;
+      --border:         rgba(255,255,255,0.08);
+      --border-strong:  rgba(255,255,255,0.16);
+      --grid:           #232a3a;
+      --baseline:       #333c52;
+      --accent:         #5bc0d1;
+      --accent-soft:    #163338;
+      --path-gold:      #e6a06a;
+      --path-gold-soft: #3d2c1a;
+      --good:           #8fc488;
+      --purple:         #b49bd6;
+      --purple-soft:    #332a47;
+      --critical:       #e08079;
+      --critical-soft:  #3d201e;
+      --seq-1: #163338; --seq-2: #1d454c; --seq-3: #276068;
+      --seq-4: #358490; --seq-5: #4ba7b3; --seq-6: #74c4cd; --seq-7: #a8dde6;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 28px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-page:   #0a0d14;
+    --surface-card:   #141926;
+    --surface-sunken: #0f131d;
+    --text-primary:   #eef1f8;
+    --text-secondary: #9aa1b8;
+    --text-muted:     #656d84;
+    --border:         rgba(255,255,255,0.08);
+    --border-strong:  rgba(255,255,255,0.16);
+    --grid:           #232a3a;
+    --baseline:       #333c52;
+    --accent:         #5bc0d1;
+    --accent-soft:    #163338;
+    --path-gold:      #e6a06a;
+    --path-gold-soft: #3d2c1a;
+    --good:           #8fc488;
+    --purple:         #b49bd6;
+    --purple-soft:    #332a47;
+    --critical:       #e08079;
+    --critical-soft:  #3d201e;
+    --seq-1: #163338; --seq-2: #1d454c; --seq-3: #276068;
+    --seq-4: #358490; --seq-5: #4ba7b3; --seq-6: #74c4cd; --seq-7: #a8dde6;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 28px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; max-width: 100%; }
+  body {
+    margin: 0;
+    background: var(--surface-page);
+    color: var(--text-primary);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    padding: 16px 16px 40px;
+  }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  .wrap { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+  /* ---------- header ---------- */
+  .app-header { padding: 4px 2px 2px; }
+  .app-header h1 { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  .app-header p { margin: 2px 0 0; color: var(--text-secondary); font-size: 13px; max-width: 480px; }
+
+  /* ---------- controls card ---------- */
+  .controls-card {
+    background: var(--surface-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .control-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+  .control-group { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .control-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; }
+  .control-hint { margin: 2px 0 0; font-size: 11px; color: var(--text-muted); font-weight: 400; text-transform: none; letter-spacing: normal; }
+
+  select.song-select {
+    font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--text-primary);
+    background: var(--surface-sunken); border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 7px 10px; min-width: 230px; cursor: pointer;
+  }
+
+  .segmented { display: inline-flex; background: var(--surface-sunken); border: 1px solid var(--border-strong); border-radius: 8px; padding: 2px; gap: 2px; }
+  .segmented button {
+    font-family: inherit; font-size: 12.5px; font-weight: 600; border: none; background: transparent;
+    color: var(--text-secondary); padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+  }
+  .segmented button.active { background: var(--surface-card); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .segmented button.danger.active { background: var(--critical); color: #fff; }
+  .segmented button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .segmented button .warn-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--critical); margin-right: 6px; vertical-align: middle; }
+
+  .hand-tabs { display: inline-flex; gap: 6px; }
+  .hand-tabs button {
+    font-family: inherit; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border-strong);
+    background: var(--surface-sunken); color: var(--text-secondary); padding: 6px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .hand-tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .hand-tabs button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* ---------- constraint chips ---------- */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: flex; align-items: baseline; gap: 6px; background: var(--surface-sunken);
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+  }
+  .chip .k { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .chip .v { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; color: var(--text-primary); }
+
+  /* ---------- layout grid ---------- */
+  .main-grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; min-width: 0; }
+
+  .card { background: var(--surface-card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); min-width: 0; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .card-head h2 { font-size: 13.5px; font-weight: 700; margin: 0; }
+  .card-head .sub { font-size: 12px; color: var(--text-muted); }
+  .card-body { padding: 14px 16px; }
+
+  /* ---------- about card ---------- */
+  .about-card > summary { cursor: pointer; list-style: none; user-select: none; }
+  .about-card > summary::-webkit-details-marker { display: none; }
+  .about-card:not([open]) > summary { border-bottom: none; }
+  .about-card .about-toggle-hint::after { content: "Hide ▴"; }
+  .about-card:not([open]) .about-toggle-hint::after { content: "Show ▾"; }
+  .about-card > summary.card-head { padding: 7px 12px; }
+  .about-card .card-body { padding: 6px 12px 8px; }
+  .about-card .card-body p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--text-secondary); }
+
+  /* ---------- playback bar ---------- */
+  .playbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .playbar .btns { display: flex; gap: 4px; }
+  .playbar button.transport {
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-strong);
+    background: var(--surface-sunken); color: var(--text-primary); cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .playbar button.transport:hover { background: var(--accent-soft); }
+  .playbar button.transport.play { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .playbar input[type="range"] { flex: 1; min-width: 100px; accent-color: var(--accent); }
+  .playbar .step-readout { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-secondary); white-space: nowrap; min-width: 92px; }
+  .ghost-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); cursor: pointer; user-select: none; white-space: nowrap; }
+  .ghost-toggle input { accent-color: var(--accent); }
+
+  /* ---------- trellis ---------- */
+  .trellis-outer { display: flex; }
+  #trellisSvg, #axisSvg, #rollSvg { display: block; }
+  .axis-svg { flex: none; background: var(--surface-card); position: relative; z-index: 2; }
+  .scroll-svg-wrap { overflow-x: auto; flex: 1; min-width: 0; position: relative; }
+  .particle-canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+  svg text { font-family: 'IBM Plex Mono', monospace; }
+  .col-label { font-family: 'IBM Plex Sans', sans-serif; }
+
+  .node-circle {
+    cursor: pointer;
+    transition: width 0.12s ease, height 0.12s ease, x 0.12s ease, y 0.12s ease,
+                stroke-width 0.12s ease, opacity 0.3s ease, filter 0.15s ease;
+  }
+  .node-circle:hover, .node-circle.hovered { stroke: var(--text-primary); stroke-width: 2px; filter: drop-shadow(0 0 4px rgba(255,255,255,0.35)); }
+  .node-circle:focus { outline: none; stroke: var(--accent); stroke-width: 2.5px; }
+  .node-circle.final { stroke: var(--path-gold); filter: drop-shadow(0 0 5px rgba(230,160,106,0.55)); }
+  .node-circle.violation { stroke: var(--purple); stroke-width: 1.6px; stroke-dasharray: 2 1.5; }
+  .node-circle.final.violation { stroke: var(--path-gold); stroke-width: 1.6px; stroke-dasharray: 2 1.5; }
+  .node-circle.pinned { stroke: var(--text-primary); stroke-width: 2.5px; }
+  .node-circle.faded, .kept-edge.faded, .final-edge.faded { opacity: 0.14 !important; filter: none; }
+
+  @keyframes pinnedGlow {
+    0%, 100% { stroke-opacity: 1; filter: drop-shadow(0 0 2px var(--accent)); }
+    50% { stroke-opacity: 0.45; filter: drop-shadow(0 0 9px var(--accent)); }
+  }
+  .node-circle.pinned-pulse { animation: pinnedGlow 1.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .node-circle.pinned-pulse { animation: none; filter: drop-shadow(0 0 6px var(--accent)); } }
+
+  .kept-edge { stroke: var(--text-muted); stroke-width: 1.4px; fill: none; opacity: 0.55; transition: opacity 0.3s ease; }
+  .ghost-edge {
+    stroke: var(--path-gold); stroke-width: 1.1px; stroke-dasharray: 4 3; fill: none;
+    opacity: 0; transition: opacity 0.5s ease;
+  }
+  .ghost-edge.show { opacity: 0.4; }
+  .scan-flash {
+    stroke: var(--text-primary); stroke-width: 1.2px; fill: none; opacity: 0;
+    animation: scanFlashAnim 0.34s ease-out forwards;
+  }
+  @keyframes scanFlashAnim { 0% { opacity: 0; } 25% { opacity: 0.6; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .scan-flash { display: none; } }
+  .final-edge {
+    stroke: var(--path-gold); stroke-width: 3px; fill: none; stroke-linecap: round;
+    opacity: 0; transition: opacity 0.35s ease;
+    filter: drop-shadow(0 0 3px rgba(230,160,106,0.5));
+  }
+  .final-edge.show { opacity: 0.95; }
+  .col-fade { opacity: 0; transition: opacity 0.35s ease; }
+  .col-fade.show { opacity: 1; }
+  .col-required { font-size: 10.5px; fill: var(--text-secondary); transition: opacity 0.3s ease; }
+  .col-required.black { fill: var(--purple); }
+  .axis-tick { font-size: 10.5px; fill: var(--text-muted); }
+  .axis-line { stroke: var(--grid); stroke-width: 1px; }
+
+  @keyframes pulseNode {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.7); }
+    100% { transform: scale(1.15); }
+  }
+  .pulse { animation: pulseNode 0.5s ease; transform-box: fill-box; transform-origin: center; }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+
+  /* ---------- keyboard strip ---------- */
+  .roll-wrap { overflow-x: auto; padding: 8px 16px 16px; }
+  .white-key { fill: var(--surface-sunken); stroke: var(--border-strong); stroke-width: 1px; transition: fill 0.15s ease, stroke 0.15s ease; }
+  .white-key.required { fill: var(--path-gold-soft); stroke: var(--path-gold); stroke-width: 2px; }
+  .white-key.thumb { stroke: var(--accent); stroke-width: 2px; stroke-dasharray: 3 2; }
+  .black-diamond { fill: var(--path-gold-soft); stroke: var(--path-gold); stroke-width: 1.5px; }
+  .key-label { font-size: 15px; fill: var(--text-muted); }
+  .now-line { stroke: var(--path-gold); stroke-width: 2px; filter: drop-shadow(0 0 4px rgba(230,160,106,0.6)); }
+  .roll-bar { fill: var(--accent); opacity: 0.75; transition: opacity 0.2s ease; }
+  .roll-bar.now { fill: var(--path-gold); opacity: 1; filter: drop-shadow(0 0 5px rgba(230,160,106,0.6)); }
+  .roll-bar.black { fill: var(--purple); opacity: 0.85; }
+
+  /* ---------- inspector ---------- */
+  .inspector-empty { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+  .inspector-title { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 10px; line-height: 1.5; }
+  .inspector-title b { color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; }
+  .inspector-clear {
+    border: 1px solid var(--border-strong); background: var(--surface-sunken); color: var(--text-secondary);
+    cursor: pointer; font-size: 11px; padding: 3px 8px; border-radius: 999px; line-height: 1.3;
+  }
+  .inspector-clear:hover { background: var(--accent-soft); color: var(--text-primary); border-color: var(--accent); }
+  table.edges { width: 100%; border-collapse: collapse; font-size: 11px; }
+  table.edges th { text-align: right; font-weight: 600; color: var(--text-muted); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.02em; padding: 3px 5px; border-bottom: 1px solid var(--border); }
+  table.edges th:first-child, table.edges td:first-child { text-align: left; }
+  table.edges td { text-align: right; padding: 3px 5px; font-family: 'IBM Plex Mono', monospace; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+  table.edges tr.kept td { color: var(--text-primary); font-weight: 600; background: var(--path-gold-soft); }
+  table.edges tr.kept td:first-child { border-radius: 6px 0 0 6px; }
+  table.edges tr.kept td:last-child { border-radius: 0 6px 6px 0; }
+  table.edges tr.selected td { color: var(--text-primary); font-weight: 600; background: var(--accent-soft); }
+  table.edges tr.selected td:first-child { border-radius: 6px 0 0 6px; }
+  table.edges tr.selected td:last-child { border-radius: 0 6px 6px 0; }
+  .kept-note { font-size: 11.5px; color: var(--text-muted); margin-top: 8px; line-height: 1.5; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .stat-tile { background: var(--surface-sunken); border-radius: 8px; padding: 8px 10px; }
+  .stat-tile .v { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; }
+  .stat-tile .l { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+  /* ---------- unplayable state ---------- */
+  .unplayable { display: flex; gap: 12px; align-items: flex-start; padding: 4px; }
+  .unplayable .icon { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--critical-soft); color: var(--critical); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; }
+  .unplayable h3 { margin: 2px 0 6px; font-size: 14.5px; color: var(--critical); }
+  .unplayable p { margin: 0 0 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+  .unplayable .span-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .span-bar-track { flex: 1; height: 8px; background: var(--surface-sunken); border-radius: 4px; overflow: hidden; max-width: 260px; }
+  .span-bar-fill { height: 100%; background: var(--critical); }
+  .span-bar-fill.ok { background: var(--good); }
+
+  .legend-row { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11.5px; color: var(--text-secondary); }
+  .legend-row .sw { display: inline-flex; align-items: center; gap: 5px; }
+  .legend-row .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .legend-row .ln { width: 16px; height: 0; border-top: 2px solid; display: inline-block; }
+
+  a.footer-link, .footer-note { font-size: 11.5px; color: var(--text-muted); text-align: center; }
+  .top-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; align-items: start; }
+  .top-row > * { min-width: 0; }
+  .top-row-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  #inspectorCard { display: flex; flex-direction: column; }
+  #inspectorBody { max-height: 320px; overflow-y: auto; }
+  .top-row .card-head { padding: 7px 12px; }
+  .top-row .card-head h2 { font-size: 12.5px; }
+  .top-row .card-body { padding: 8px 12px; }
+  .top-row .inspector-empty, .top-row .inspector-title { margin: 0; font-size: 12px; }
+  #summaryCard .stat-grid { grid-template-columns: repeat(7, minmax(0,1fr)); gap: 6px; margin: 0; }
+  #summaryCard .stat-tile { padding: 5px 7px; }
+  #summaryCard .stat-tile .v { font-size: 13px; }
+  #summaryCard .stat-tile .l { font-size: 9px; letter-spacing: 0.02em; line-height: 1.2; }
+  .top-row .controls-card { padding: 10px 12px; gap: 8px; }
+  .top-row .control-row { gap: 8px 14px; }
+  .top-row .control-group { gap: 3px; }
+  .top-row .control-group label { font-size: 10px; }
+  .top-row select.song-select { padding: 4px 8px; font-size: 12.5px; min-width: 180px; }
+  .top-row .segmented button, .top-row .hand-tabs button { padding: 4px 10px; font-size: 12px; }
+  .top-row .chip-row { gap: 5px; }
+  .top-row .chip { padding: 3px 7px; }
+  .top-row .chip .k { font-size: 9.5px; }
+  .top-row .chip .v { font-size: 11.5px; }
+  @media (max-width: 880px) { .top-row { grid-template-columns: 1fr; } }
+
+  /* ---------- layout: the piano roll leads, the trellis diagram follows ---------- */
+  #playableView { flex-direction: column; }
+  #rollWrap { order: 1; }
+  #trellisOuter { order: 2; }
+  .legend-row { order: 3; }
+
+  /* ---------- loading screen ---------- */
+  .loading-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--surface-page);
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    gap: 18px; padding: 24px; text-align: center;
+    transition: opacity 0.4s ease;
+  }
+  .loading-screen.loading-done { opacity: 0; pointer-events: none; }
+  .loading-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 640px; width: 100%; }
+  .loading-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0; letter-spacing: -0.01em; }
+  .loading-pipeline { width: min(92vw, 600px); height: auto; display: block; }
+  .loading-stage-label { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; fill: var(--text-muted); text-anchor: middle; }
+  .loading-label { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin: 0; }
+  .loading-enter-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; color: #fff;
+    background: var(--text-muted); border: 1px solid var(--text-muted); border-radius: 8px;
+    padding: 9px 22px; cursor: not-allowed; transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  }
+  .loading-enter-btn.ready { background: var(--accent); border-color: var(--accent); cursor: pointer; }
+  .loading-enter-btn.ready:hover { opacity: 0.88; }
+  .loading-seg { stroke: var(--border-strong); animation: loadingSegPulse 3s ease-in-out infinite; }
+  .loading-seg-1 { animation-delay: 0s; }
+  .loading-seg-2 { animation-delay: 1s; }
+  .loading-seg-3 { animation-delay: 2s; }
+  .loading-arrow { fill: var(--border-strong); animation: loadingArrowPulse 3s ease-in-out infinite; }
+  .loading-arrow-1 { animation-delay: 0s; }
+  .loading-arrow-2 { animation-delay: 1s; }
+  .loading-arrow-3 { animation-delay: 2s; }
+  @keyframes loadingSegPulse {
+    0% { stroke: var(--border-strong); }
+    10% { stroke: var(--path-gold); }
+    32% { stroke: var(--border-strong); }
+    100% { stroke: var(--border-strong); }
+  }
+  @keyframes loadingArrowPulse {
+    0% { fill: var(--border-strong); }
+    10% { fill: var(--path-gold); }
+    32% { fill: var(--border-strong); }
+    100% { fill: var(--border-strong); }
+  }
+  @media (prefers-reduced-motion: reduce) { .loading-seg, .loading-arrow { animation: none; } }
+</style>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-inner">
+    <svg class="loading-pipeline" viewBox="0 0 600 150" role="img" aria-label="Pipeline: sheet music to raw data to optimizer to robotic hand">
+      <line x1="101" y1="68" x2="190" y2="68" stroke-width="1.5" class="loading-seg loading-seg-1"/>
+      <path d="M 140 63 L 150 68 L 140 73 Z" class="loading-arrow loading-arrow-1"/>
+      <line x1="250" y1="68" x2="342" y2="68" stroke-width="1.5" class="loading-seg loading-seg-2"/>
+      <path d="M 291 63 L 301 68 L 291 73 Z" class="loading-arrow loading-arrow-2"/>
+      <line x1="418" y1="68" x2="504" y2="68" stroke-width="1.5" class="loading-seg loading-seg-3"/>
+      <path d="M 456 63 L 466 68 L 456 73 Z" class="loading-arrow loading-arrow-3"/>
+
+      <!-- stage 1: sheet music -->
+      <g>
+        <line x1="35" y1="50" x2="95" y2="50" stroke="var(--text-muted)" stroke-width="1"/>
+        <line x1="35" y1="58" x2="95" y2="58" stroke="var(--text-muted)" stroke-width="1"/>
+        <line x1="35" y1="66" x2="95" y2="66" stroke="var(--text-muted)" stroke-width="1"/>
+        <line x1="35" y1="74" x2="95" y2="74" stroke="var(--text-muted)" stroke-width="1"/>
+        <line x1="35" y1="82" x2="95" y2="82" stroke="var(--text-muted)" stroke-width="1"/>
+        <line x1="52" y1="74" x2="52" y2="52" stroke="var(--accent)" stroke-width="1.5"/>
+        <circle cx="48" cy="74" r="4" fill="var(--accent)"/>
+        <line x1="76" y1="66" x2="76" y2="44" stroke="var(--accent)" stroke-width="1.5"/>
+        <circle cx="72" cy="66" r="4" fill="var(--accent)"/>
+      </g>
+      <text class="loading-stage-label" x="65" y="118">Sheet music</text>
+
+      <!-- stage 2: parsed / raw data -->
+      <g>
+        <rect x="196" y="50" width="14" height="14" rx="2" fill="var(--seq-3)"/>
+        <rect x="213" y="50" width="14" height="14" rx="2" fill="var(--seq-4)"/>
+        <rect x="230" y="50" width="14" height="14" rx="2" fill="var(--seq-3)"/>
+        <rect x="196" y="67" width="14" height="14" rx="2" fill="var(--seq-4)"/>
+        <rect x="213" y="67" width="14" height="14" rx="2" fill="var(--seq-3)"/>
+        <rect x="230" y="67" width="14" height="14" rx="2" fill="var(--seq-4)"/>
+        <rect x="196" y="84" width="14" height="14" rx="2" fill="var(--seq-3)"/>
+        <rect x="213" y="84" width="14" height="14" rx="2" fill="var(--seq-4)"/>
+        <rect x="230" y="84" width="14" height="14" rx="2" fill="var(--seq-3)"/>
+      </g>
+      <text class="loading-stage-label" x="220" y="118">Parsed notes</text>
+
+      <!-- stage 3: viterbi optimizer (mini trellis) -->
+      <g>
+        <line x1="353" y1="68" x2="380" y2="46" stroke="var(--border)" stroke-width="1"/>
+        <line x1="353" y1="90" x2="380" y2="90" stroke="var(--border)" stroke-width="1"/>
+        <line x1="380" y1="90" x2="407" y2="68" stroke="var(--border)" stroke-width="1"/>
+        <line x1="353" y1="68" x2="380" y2="46" stroke="var(--path-gold)" stroke-width="2.5"/>
+        <line x1="380" y1="46" x2="407" y2="68" stroke="var(--path-gold)" stroke-width="2.5"/>
+        <rect x="348.5" y="41.5" width="9" height="9" rx="2.5" fill="var(--seq-3)"/>
+        <rect x="348.5" y="63.5" width="9" height="9" rx="2.5" fill="var(--path-gold)"/>
+        <rect x="348.5" y="85.5" width="9" height="9" rx="2.5" fill="var(--seq-3)"/>
+        <rect x="375.5" y="41.5" width="9" height="9" rx="2.5" fill="var(--path-gold)"/>
+        <rect x="375.5" y="63.5" width="9" height="9" rx="2.5" fill="var(--seq-3)"/>
+        <rect x="375.5" y="85.5" width="9" height="9" rx="2.5" fill="var(--seq-3)"/>
+        <rect x="402.5" y="41.5" width="9" height="9" rx="2.5" fill="var(--seq-3)"/>
+        <rect x="402.5" y="63.5" width="9" height="9" rx="2.5" fill="var(--path-gold)"/>
+        <rect x="402.5" y="85.5" width="9" height="9" rx="2.5" fill="var(--seq-3)"/>
+      </g>
+      <text class="loading-stage-label" x="380" y="118">Optimizer</text>
+
+      <!-- stage 4: robotic hand on keyboard -->
+      <g>
+        <rect x="510" y="50" width="9" height="32" rx="1" fill="var(--surface-card)" stroke="var(--border-strong)"/>
+        <rect x="520" y="50" width="9" height="32" rx="1" fill="var(--path-gold)"/>
+        <rect x="530" y="50" width="9" height="32" rx="1" fill="var(--surface-card)" stroke="var(--border-strong)"/>
+        <rect x="540" y="50" width="9" height="32" rx="1" fill="var(--surface-card)" stroke="var(--border-strong)"/>
+        <rect x="550" y="50" width="9" height="32" rx="1" fill="var(--surface-card)" stroke="var(--border-strong)"/>
+        <rect x="517" y="50" width="6" height="19" rx="1" fill="var(--text-secondary)"/>
+        <rect x="537" y="50" width="6" height="19" rx="1" fill="var(--text-secondary)"/>
+        <rect x="514" y="28" width="22" height="13" rx="4" fill="var(--purple)"/>
+        <rect x="516" y="39" width="3" height="9" rx="1.5" fill="var(--purple)"/>
+        <rect x="523" y="39" width="3" height="12" rx="1.5" fill="var(--purple)"/>
+        <rect x="530" y="39" width="3" height="9" rx="1.5" fill="var(--purple)"/>
+      </g>
+      <text class="loading-stage-label" x="533" y="118">Robotic hand</text>
+    </svg>
+    <p class="loading-label">Loading song data.</p>
+    <button id="loadingEnterBtn" class="loading-enter-btn" disabled>Loading data.</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <details class="card about-card" open>
+    <summary class="card-head">
+      <h2>About this project</h2>
+      <span class="sub about-toggle-hint"></span>
+    </summary>
+    <div class="card-body">
+      <p>A motion planner that decides how a robotic hand moves across a piano keyboard to play a song. For each note it weighs every possible hand position and picks the sequence that plays the whole piece with the least strain and movement. Built as Algorithms Team Lead for Purdue Autonomous Robotics (team of 4), where split point optimization cut hand movement 35% versus static assignment. The dashboard walks through each song note by note, showing the positions considered and the one chosen, with synced playback.</p>
+      <p><strong>Stack:</strong> Python, Viterbi dynamic programming, music21, JavaScript</p>
+      <p><a href="https://github.com/tylerkei9/piano-hand-trellis" target="_blank" rel="noopener noreferrer">View the code on GitHub</a></p>
+    </div>
+  </details>
+
+  <div class="top-row">
+  <div class="top-row-col" id="topRowLeft">
+  <div class="controls-card">
+    <div class="control-row">
+      <div class="control-group">
+        <label for="songSelect">Song</label>
+        <select id="songSelect" class="song-select"></select>
+      </div>
+      <div class="control-group">
+        <label>Hardware mode</label>
+        <div class="segmented" id="scenarioToggle">
+          <button data-scenario="two_hand" class="active">Two-hand (normal)</button>
+          <button data-scenario="rh_failure" class="danger"><span class="warn-dot"></span>Right-hand-only (left disabled)</button>
+        </div>
+        <p class="control-hint">See what happens if the robot's left hand stops working.</p>
+      </div>
+      <div class="control-group">
+        <label>Hand</label>
+        <div class="hand-tabs" id="handTabs">
+          <button data-hand="left">Left</button>
+          <button data-hand="right">Right</button>
+        </div>
+      </div>
+    </div>
+    <div class="chip-row" id="chipRow"></div>
+  </div>
+  </div>
+
+  <div class="top-row-col" id="topRowRight">
+  <aside class="card" id="inspectorCard">
+    <div class="card-head">
+      <h2>Inspector</h2>
+      <button id="inspectorClear" class="inspector-clear" title="Clear selection (Esc)" style="display:none;">✕ clear</button>
+    </div>
+    <div class="card-body" id="inspectorBody">
+      <p class="inspector-empty">Select a position to inspect it.</p>
+    </div>
+  </aside>
+  <div class="card" id="summaryCard">
+    <div class="card-head">
+      <h2>Path summary</h2>
+    </div>
+    <div class="card-body" id="summaryBody"></div>
+  </div>
+  </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card" id="trellisCard">
+
+      <div id="playableView">
+        <div class="playbar">
+          <div class="btns">
+            <button class="transport" id="btnReset" title="Reset">⏮</button>
+            <button class="transport" id="btnStepBack" title="Step back">◀</button>
+            <button class="transport play" id="btnPlay" title="Play">▶</button>
+            <button class="transport" id="btnStepFwd" title="Step forward">▶│</button>
+          </div>
+          <input type="range" id="scrubber" min="0" max="0" value="0" step="1">
+          <span class="step-readout" id="stepReadout">-</span>
+          <label class="ghost-toggle" title="Shows every candidate position the algorithm considered and discarded, not just the one it kept"><input type="checkbox" id="ghostToggle"> show pruned branches</label>
+          <label class="ghost-toggle"><input type="checkbox" id="audioToggle" checked> sound</label>
+        </div>
+
+        <div class="trellis-outer" id="trellisOuter">
+          <svg class="axis-svg" id="axisSvg"></svg>
+          <div class="scroll-svg-wrap" id="scrollWrap">
+            <svg id="trellisSvg"></svg>
+            <canvas class="particle-canvas" id="particleCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="legend-row" style="padding:10px 16px 0;">
+          <span class="sw"><span class="ln" style="border-color:var(--text-muted)"></span>kept</span>
+          <span class="sw"><span class="ln" style="border-color:var(--path-gold)"></span>final path</span>
+          <span class="sw"><span class="ln" style="border-color:var(--path-gold); border-top-style:dashed;"></span>pruned</span>
+          <span class="sw"><span class="dot" style="background:var(--seq-3)"></span>low cost</span>
+          <span class="sw"><span class="dot" style="background:var(--seq-7)"></span>high cost</span>
+          <span class="sw"><span class="dot" style="background:transparent;border:1.5px dashed var(--purple);"></span>splay / black key</span>
+        </div>
+
+        <div class="roll-wrap" id="rollWrap">
+          <svg id="rollSvg"></svg>
+        </div>
+      </div>
+
+      <div id="unplayableView" class="card-body" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Populated at boot from DATA._song_labels once data.json loads (see buildSongsList).
+  var SONGS = [];
+  function buildSongsList() {
+    var labels = DATA._song_labels || {};
+    SONGS = Object.keys(DATA).filter(function (k) {
+      return k !== "_constants" && k !== "_song_labels";
+    }).sort(function (a, b) {
+      return (labels[a] || a).localeCompare(labels[b] || b);
+    }).map(function (k) {
+      return { key: k, label: labels[k] || k };
+    });
+  }
+
+  var ROW_H = 24, COL_W = 52, AXIS_W = 46, TOP_PAD = 30, BOTTOM_PAD = 12, LEFT_PAD = 26, RIGHT_PAD = 26;
+  var NODE_W = 13, NODE_H = 13, NODE_W_FINAL = 17, NODE_H_FINAL = 17, NODE_RX = 4;
+  var SEQ = ["var(--seq-1)","var(--seq-2)","var(--seq-3)","var(--seq-4)","var(--seq-5)","var(--seq-6)","var(--seq-7)"];
+  var REDUCE_MOTION = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var particleCtx = null, particleRAF = null, PARTICLE_COLOR = "#e6a06a";
+
+  var DATA = null;
+  var state = {
+    song: "hotcrossbuns",
+    scenario: "two_hand",
+    hand: "left",
+    revealCount: 0,
+    playing: false,
+    playRAF: null,
+    playbackRate: 1,       // 1 music-second (step `time`) per real second
+    audioEnabled: true,
+    pinned: null,          // {stepIdx, pos}
+    focusedStep: null,     // for keyboard strip
+    showGhosts: false
+  };
+  var cache = {}; // per trace: geometry + lookups
+
+  function el(id) { return document.getElementById(id); }
+  function svgEl(tag, attrs) {
+    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function textEl(tag, x, y, str, cls) {
+    var t = svgEl(tag, { x: x, y: y });
+    if (cls) t.setAttribute("class", cls);
+    t.textContent = str;
+    return t;
+  }
+
+  function noteName(idx) {
+    if (idx === null || idx === undefined) return "-";
+    var names = ["A","B","C","D","E","F","G"];
+    var pos = ((idx % 7) + 7) % 7;
+    var octave = pos <= 1 ? Math.floor(idx / 7) : Math.floor(idx / 7) + 1;
+    return names[pos] + octave;
+  }
+
+  function fmt(n) {
+    if (n === null || n === undefined) return "-";
+    return (Math.round(n * 100) / 100).toString();
+  }
+  function fmtDelta(n) {
+    if (n === null || n === undefined) return "-";
+    var r = Math.round(n * 100) / 100;
+    return r > 0 ? "+" + r : r.toString();
+  }
+
+  // ---------------- data plumbing ----------------
+
+  function getSongData() { return DATA[state.song]; }
+  function getTrace(hand) {
+    var sd = getSongData();
+    if (!sd) return null;
+    var scen = sd.scenarios[state.scenario];
+    if (!scen) return null;
+    return scen[hand] || null;
+  }
+  function availableHands() {
+    var out = [];
+    if (getTrace("left")) out.push("left");
+    if (getTrace("right")) out.push("right");
+    return out;
+  }
+
+  // ---------------- top-level render ----------------
+
+  function populateSongSelect() {
+    var sel = el("songSelect");
+    sel.innerHTML = "";
+    SONGS.forEach(function (s) {
+      var o = document.createElement("option");
+      o.value = s.key; o.textContent = s.label;
+      sel.appendChild(o);
+    });
+    sel.value = state.song;
+    sel.addEventListener("change", function () {
+      state.song = sel.value;
+      onSongOrScenarioChanged();
+    });
+  }
+
+  function renderChips() {
+    var c = DATA._constants;
+    var chips = [
+      ["Speed limit", c.MAX_KEYS_PER_SECOND + " keys/s", "The fastest the motor can move the hand across the keyboard"],
+      ["Move penalty", c.MOVE_PENALTY, "A fixed cost charged every time the hand has to reposition at all"],
+      ["Hand gap", c.MIN_HAND_GAP + " keys", "Minimum distance kept between the two hands so they never collide"],
+      ["Max splay", c.MAX_OUTER_SPLAY + " keys", "How far the thumb or pinky can stretch beyond a natural hand span"],
+      ["Splay penalty", c.OUTER_FINGER_SPLAY_PENALTY, "Cost charged for using that extra stretch"],
+      ["Black key (outer finger)", c.OUTER_FINGER_BLACK_KEY_PENALTY, "Cost charged when the thumb or pinky has to play a black key"],
+      ["Look-ahead", c.LOOKAHEAD_STEPS + " steps", "How many notes ahead the optimizer checks before committing to a position"]
+    ];
+    var row = el("chipRow");
+    row.innerHTML = "";
+    chips.forEach(function (pair) {
+      var d = document.createElement("div");
+      d.className = "chip";
+      d.title = pair[2];
+      d.innerHTML = '<span class="k">' + pair[0] + '</span><span class="v">' + pair[1] + '</span>';
+      row.appendChild(d);
+    });
+  }
+
+  function onSongOrScenarioChanged() {
+    var hands = availableHands();
+    if (hands.indexOf(state.hand) === -1) state.hand = hands[0] || "left";
+    renderHandTabs(hands);
+    renderScenarioToggle();
+    stopPlayback();
+    state.pinned = null;
+    state.focusedStep = null;
+    renderMain();
+  }
+
+  function renderScenarioToggle() {
+    var sd = getSongData();
+    var btns = document.querySelectorAll("#scenarioToggle button");
+    btns.forEach(function (b) {
+      var scen = b.getAttribute("data-scenario");
+      b.classList.toggle("active", scen === state.scenario);
+      var hasData = sd.scenarios[scen].left || sd.scenarios[scen].right;
+      b.title = hasData ? "" : "No valid hand path exists for this song under this mode.";
+    });
+  }
+
+  function renderHandTabs(hands) {
+    var btns = document.querySelectorAll("#handTabs button");
+    btns.forEach(function (b) {
+      var h = b.getAttribute("data-hand");
+      var has = hands.indexOf(h) !== -1;
+      b.disabled = !has;
+      b.classList.toggle("active", h === state.hand && has);
+    });
+  }
+
+  function renderMain() {
+    var trace = getTrace(state.hand);
+    var sd = getSongData();
+    var songLabel = SONGS.filter(function (s) { return s.key === state.song; })[0].label;
+
+    if (!trace) {
+      el("playableView").style.display = "none";
+      el("unplayableView").style.display = "block";
+      renderUnplayable(sd);
+      setHTML("summaryBody", "");
+      renderInspectorEmpty();
+      return;
+    }
+
+    el("playableView").style.display = "flex";
+    el("unplayableView").style.display = "none";
+
+    buildCache(trace);
+    computeScales();
+    state.revealCount = trace.steps.length; // complete at rest
+    el("scrubber").max = trace.steps.length - 1;
+    el("scrubber").value = trace.steps.length - 1;
+    state.focusedStep = 0;
+
+    drawAxis();
+    drawTrellis();
+    updateScrubberLabel();
+    renderKeyboard();
+    renderInspectorEmpty();
+    renderSummary();
+  }
+
+  function renderUnplayable(sd) {
+    var span = sd.widest_simultaneous_span;
+    var t = sd.widest_simultaneous_time;
+    var keys = sd.widest_simultaneous_keys || [];
+    var maxReach = 8; // 4 natural + 2 splay each side
+    var pct = Math.min(100, Math.round((span / (maxReach * 2)) * 100));
+    var html = '<div class="unplayable">' +
+      '<div class="icon">!</div>' +
+      '<div>' +
+      '<h3>Can&#39;t be played this way</h3>' +
+      '<p>This song can&#39;t be played this way. Some notes are too far apart for one hand to reach.</p>' +
+      '<p>t=<b class="mono">' + fmt(t) + 's</b> · <b class="mono">' + keys.join(", ") + '</b> · span <b class="mono">' + span + '</b> keys (max reach <b class="mono">' + maxReach + '</b>/hand)</p>' +
+      '<div class="span-bar"><div class="span-bar-track"><div class="span-bar-fill" style="width:' + pct + '%"></div></div>' +
+      '<span class="mono" style="font-size:11.5px;color:var(--critical)">' + span + '/' + (maxReach*2) + '</span></div>' +
+      '</div></div>';
+    el("unplayableView").innerHTML = html;
+  }
+
+  // ---------------- geometry cache ----------------
+
+  function buildCache(trace) {
+    var minPos = Infinity, maxPos = -Infinity, minCost = Infinity, maxCost = -Infinity;
+    trace.steps.forEach(function (step) {
+      step.states.forEach(function (s) {
+        if (s.pos < minPos) minPos = s.pos;
+        if (s.pos > maxPos) maxPos = s.pos;
+        if (s.cost !== null) {
+          if (s.cost < minCost) minCost = s.cost;
+          if (s.cost > maxCost) maxCost = s.cost;
+        }
+      });
+    });
+    minPos -= 1; maxPos += 1;
+    var finalSeq = trace.final_path.filter(function (v) { return v !== null; });
+
+    var width = LEFT_PAD + trace.steps.length * COL_W + RIGHT_PAD;
+    var height = TOP_PAD + (maxPos - minPos + 1) * ROW_H + BOTTOM_PAD;
+
+    function xFor(i) { return LEFT_PAD + i * COL_W + COL_W / 2; }
+    function yFor(pos) { return TOP_PAD + (maxPos - pos) * ROW_H + ROW_H / 2; }
+    function colorFor(cost) {
+      if (cost === null || maxCost === minCost) return SEQ[3];
+      var t = (cost - minCost) / (maxCost - minCost);
+      var idx = Math.min(SEQ.length - 1, Math.floor(t * SEQ.length));
+      return SEQ[idx];
+    }
+
+    cache = {
+      trace: trace, minPos: minPos, maxPos: maxPos, minCost: minCost, maxCost: maxCost,
+      finalSeq: finalSeq, width: width, height: height, xFor: xFor, yFor: yFor, colorFor: colorFor
+    };
+  }
+
+  // ---------------- axis ----------------
+
+  function drawAxis() {
+    var svg = el("axisSvg");
+    svg.innerHTML = "";
+    svg.setAttribute("width", AXIS_W * TS);
+    svg.setAttribute("height", cache.height * TS);
+    svg.setAttribute("viewBox", "0 0 " + AXIS_W + " " + cache.height);
+    for (var p = cache.minPos; p <= cache.maxPos; p++) {
+      var tick = textEl("text", AXIS_W - 8, cache.yFor(p) + 3, noteName(p), "axis-tick");
+      tick.setAttribute("text-anchor", "end");
+      svg.appendChild(tick);
+    }
+  }
+
+  // ---------------- trellis ----------------
+
+  function drawTrellis() {
+    var svg = el("trellisSvg");
+    svg.innerHTML = "";
+    svg.setAttribute("width", cache.width * TS);
+    svg.setAttribute("height", cache.height * TS);
+    svg.setAttribute("viewBox", "0 0 " + cache.width + " " + cache.height);
+    sizeParticleCanvas();
+
+    var trace = cache.trace;
+
+    // gridlines per row
+    for (var p = cache.minPos; p <= cache.maxPos; p++) {
+      svg.appendChild(svgEl("line", {
+        x1: 0, x2: cache.width, y1: cache.yFor(p), y2: cache.yFor(p),
+        class: "axis-line"
+      }));
+    }
+
+    var ghostGroup = svgEl("g", { id: "ghostGroup" });
+    var keptGroup = svgEl("g", { id: "keptGroup" });
+    var nodeGroup = svgEl("g", { id: "nodeGroup" });
+    var labelGroup = svgEl("g", { id: "labelGroup" });
+    var finalGroup = svgEl("g", { id: "finalGroup" });
+    svg.appendChild(ghostGroup);
+    svg.appendChild(keptGroup);
+    svg.appendChild(finalGroup);
+    svg.appendChild(nodeGroup);
+    svg.appendChild(labelGroup);
+
+    trace.steps.forEach(function (step, i) {
+      var visible = i < state.revealCount;
+      var x = cache.xFor(i);
+
+      // column required-note label
+      var labelStr = step.keys.join("+");
+      var hasBlack = step.is_black && step.is_black.some(function (b) { return b; });
+      var lab = textEl("text", x, TOP_PAD - 10, labelStr, "col-fade col-required" + (hasBlack ? " black" : ""));
+      lab.setAttribute("text-anchor", "middle");
+      lab.setAttribute("data-step", i);
+      if (visible) lab.classList.add("show");
+      labelGroup.appendChild(lab);
+
+      if (i > 0) {
+        var prevX = cache.xFor(i - 1);
+        step.states.forEach(function (s) {
+          if (s.kept_from === null || s.kept_from === undefined) return;
+          var path = svgEl("path", {
+            d: "M " + prevX + " " + cache.yFor(s.kept_from) + " L " + x + " " + cache.yFor(s.pos),
+            class: "kept-edge col-fade",
+            "data-step": i,
+            "data-edge-key": nodeKey(i - 1, s.kept_from) + ">" + nodeKey(i, s.pos)
+          });
+          if (visible) path.classList.add("show");
+          keptGroup.appendChild(path);
+
+          if (state.showGhosts) {
+            s.incoming.forEach(function (e) {
+              if (e.from === s.kept_from) return;
+              var g = svgEl("path", {
+                d: "M " + prevX + " " + cache.yFor(e.from) + " L " + x + " " + cache.yFor(s.pos),
+                class: "ghost-edge",
+                "data-step": i
+              });
+              if (visible) g.classList.add("show");
+              ghostGroup.appendChild(g);
+            });
+          }
+        });
+      }
+
+      step.states.forEach(function (s) {
+        var isFinal = cache.finalSeq[i] === s.pos;
+        var isViolation = s.fingering_penalty > 0;
+        var w = isFinal ? NODE_W_FINAL : NODE_W, h = isFinal ? NODE_H_FINAL : NODE_H;
+        var cyPos = cache.yFor(s.pos);
+        var c = svgEl("rect", {
+          x: x - w / 2, y: cyPos - h / 2, width: w, height: h, rx: NODE_RX, ry: NODE_RX,
+          fill: cache.colorFor(s.cost),
+          class: "node-circle col-fade" + (isFinal ? " final" : "") + (isViolation ? " violation" : ""),
+          tabindex: "0", role: "button",
+          "data-step": i, "data-pos": s.pos
+        });
+        c.setAttribute("aria-label", noteName(s.pos) + " at step " + i + ", cost " + fmt(s.cost) + (isViolation ? ", needs splay or black key" : ""));
+        if (visible) c.classList.add("show");
+        c.addEventListener("pointerenter", function () { onHoverNode(i, s.pos); });
+        c.addEventListener("focus", function () { onHoverNode(i, s.pos); });
+        c.addEventListener("click", function () { onClickNode(i, s.pos); });
+        c.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onClickNode(i, s.pos); }
+        });
+        nodeGroup.appendChild(c);
+      });
+    });
+
+    // final path overlay
+    for (var i = 1; i < cache.finalSeq.length; i++) {
+      var visible2 = i < state.revealCount;
+      var fp = svgEl("path", {
+        d: "M " + cache.xFor(i - 1) + " " + cache.yFor(cache.finalSeq[i - 1]) + " L " + cache.xFor(i) + " " + cache.yFor(cache.finalSeq[i]),
+        class: "final-edge col-fade",
+        "data-edge-key": nodeKey(i - 1, cache.finalSeq[i - 1]) + ">" + nodeKey(i, cache.finalSeq[i])
+      });
+      if (visible2 && state.revealCount >= cache.finalSeq.length) fp.classList.add("show");
+      finalGroup.appendChild(fp);
+    }
+
+    restorePinnedHighlight();
+
+    var goldVar = getComputedStyle(document.documentElement).getPropertyValue("--path-gold").trim();
+    if (goldVar) PARTICLE_COLOR = goldVar;
+    if (REDUCE_MOTION) drawParticlesFrame(0);
+  }
+
+  // Lightweight reveal update: toggles "show" on already-built elements instead of
+  // tearing down and rebuilding the whole SVG, so the CSS opacity transition actually
+  // animates and playback doesn't re-layout hundreds of nodes every frame.
+  function applyReveal() {
+    clearGrowTimers();
+    var svg = el("trellisSvg");
+    if (!svg.firstChild) { drawTrellis(); return; }
+    ["#labelGroup", "#nodeGroup", "#keptGroup", "#ghostGroup"].forEach(function (sel) {
+      var g = svg.querySelector(sel);
+      if (!g) return;
+      Array.prototype.forEach.call(g.children, function (elm) {
+        var step = parseInt(elm.getAttribute("data-step"), 10);
+        elm.classList.toggle("show", step < state.revealCount);
+      });
+    });
+    updateFinalGroupVisibility();
+  }
+
+  function updateFinalGroupVisibility() {
+    var svg = el("trellisSvg");
+    var fg = svg && svg.querySelector("#finalGroup");
+    if (!fg) return;
+    var finalReady = state.revealCount >= cache.finalSeq.length;
+    Array.prototype.forEach.call(fg.children, function (elm) { elm.classList.toggle("show", finalReady); });
+  }
+
+  // Reveal one layer instantly (no stagger) — used for prefers-reduced-motion.
+  function revealLayerInstant(stepIdx) {
+    var svg = el("trellisSvg");
+    var lab = svg.querySelector('.col-required[data-step="' + stepIdx + '"]');
+    if (lab) lab.classList.add("show");
+    svg.querySelectorAll('.node-circle[data-step="' + stepIdx + '"]').forEach(function (n) { n.classList.add("show"); });
+    svg.querySelectorAll('.kept-edge[data-step="' + stepIdx + '"]').forEach(function (e) { e.classList.add("show"); });
+    if (state.showGhosts) svg.querySelectorAll('.ghost-edge[data-step="' + stepIdx + '"]').forEach(function (e) { e.classList.add("show"); });
+  }
+
+  // Grow a layer the way the optimizer actually builds it: candidate thumb positions
+  // are scanned low-to-high (matching get_possible_states_extended's position scan),
+  // and each one briefly shows every earlier position it could have come from before
+  // settling on the cheapest — the same comparison Viterbi's inner loop performs.
+  var LAYER_GROW_MS = 380;
+  var growTimers = [];
+  function clearGrowTimers() {
+    growTimers.forEach(function (id) { clearTimeout(id); });
+    growTimers = [];
+    var svg = el("trellisSvg");
+    var flashGroup = svg && svg.querySelector("#scanFlashGroup");
+    if (flashGroup) flashGroup.innerHTML = "";
+  }
+
+  function growLayer(stepIdx) {
+    var svg = el("trellisSvg");
+    if (!svg.firstChild) { drawTrellis(); return; }
+
+    var lab = svg.querySelector('.col-required[data-step="' + stepIdx + '"]');
+    if (lab) lab.classList.add("show");
+    if (state.showGhosts) svg.querySelectorAll('.ghost-edge[data-step="' + stepIdx + '"]').forEach(function (e) { e.classList.add("show"); });
+
+    if (REDUCE_MOTION) { revealLayerInstant(stepIdx); return; }
+
+    var trace = cache.trace;
+    var step = trace.steps[stepIdx];
+    if (!step) return;
+    var candidates = step.states.slice().sort(function (a, b) { return a.pos - b.pos; });
+    var n = Math.max(1, candidates.length);
+    var perNodeMs = Math.max(28, Math.min(70, LAYER_GROW_MS / n));
+
+    var flashGroup = svg.querySelector("#scanFlashGroup");
+    if (!flashGroup) { flashGroup = svgEl("g", { id: "scanFlashGroup" }); svg.appendChild(flashGroup); }
+
+    candidates.forEach(function (s, k) {
+      var t = setTimeout(function () {
+        var nodeEl = svg.querySelector('.node-circle[data-step="' + stepIdx + '"][data-pos="' + s.pos + '"]');
+        if (nodeEl) nodeEl.classList.add("show");
+
+        if (stepIdx > 0 && s.incoming && s.incoming.length) {
+          var x1 = cache.xFor(stepIdx - 1), x2 = cache.xFor(stepIdx), y2 = cache.yFor(s.pos);
+          s.incoming.forEach(function (e) {
+            if (e.from === s.kept_from) return; // the kept edge below becomes the persistent line
+            var flash = svgEl("path", {
+              d: "M " + x1 + " " + cache.yFor(e.from) + " L " + x2 + " " + y2,
+              class: "scan-flash"
+            });
+            flashGroup.appendChild(flash);
+            growTimers.push(setTimeout(function () { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 340));
+          });
+          if (s.kept_from !== null && s.kept_from !== undefined) {
+            var keptEl = svg.querySelector('.kept-edge[data-edge-key="' + nodeKey(stepIdx - 1, s.kept_from) + ">" + nodeKey(stepIdx, s.pos) + '"]');
+            if (keptEl) keptEl.classList.add("show");
+          }
+        }
+      }, k * perNodeMs);
+      growTimers.push(t);
+    });
+  }
+
+  // Scale tree + roll so together they fill the remaining viewport height; width overflows and scrolls.
+  var TS = 1, RS = 1;
+  function computeScales() {
+    var outer = el("trellisOuter");
+    if (!outer || !cache.height) return;
+    // Sized as if the controls row were its original single-line height; extra top content just scrolls the page.
+    var remaining = Math.max(360, window.innerHeight - 200 - 110);
+    var rollNatH = ROLL_FALL_H + 4 + 128 + 14;
+    TS = Math.max(0.5, Math.min(2.5, (remaining * 0.55) / cache.height));
+    RS = Math.max(0.35, Math.min(1.5, (remaining * 0.45) / rollNatH));
+  }
+  function onResize() {
+    if (!cache.trace || el("playableView").style.display === "none") return;
+    computeScales(); drawAxis(); drawTrellis(); renderKeyboard();
+    balanceTopRow();
+  }
+  function setHTML(id, html) { var n = el(id); if (n) n.innerHTML = html; }
+
+  // Moves the Path summary card to whichever column minimizes the height gap between
+  // the two top-row cards, so a short/tall Inspector table never leaves one side with
+  // a block of empty space. The move itself fades out, relocates, then fades back in
+  // rather than jumping instantly.
+  function moveSummaryCard(target) {
+    var card = el("summaryCard");
+    if (!card || card.parentNode === target) return;
+    if (REDUCE_MOTION) { target.appendChild(card); return; }
+    card.style.transition = "opacity 0.25s ease";
+    card.style.opacity = "0";
+    setTimeout(function () {
+      target.appendChild(card);
+      void card.offsetWidth;
+      card.style.opacity = "1";
+    }, 250);
+  }
+  function balanceTopRow() {
+    var left = el("topRowLeft"), right = el("topRowRight");
+    var controlsEl = document.querySelector(".controls-card");
+    var inspectorCard = el("inspectorCard");
+    var summaryCard = el("summaryCard");
+    if (!left || !right || !controlsEl || !inspectorCard || !summaryCard) return;
+
+    var controlsH = controlsEl.offsetHeight;
+    var inspectorH = inspectorCard.offsetHeight;
+    var summaryH = summaryCard.offsetHeight;
+    var GAP = 14;
+
+    var diffRight = Math.abs(controlsH - (inspectorH + GAP + summaryH)); // summary stays on the right
+    var diffLeft = Math.abs((controlsH + GAP + summaryH) - inspectorH);  // summary moves to the left
+
+    var isInLeft = summaryCard.parentNode === left;
+    var wantLeft = diffLeft + 20 < diffRight; // hysteresis so it doesn't flip on tiny differences
+
+    if (wantLeft && !isInLeft) moveSummaryCard(left);
+    else if (!wantLeft && isInLeft) moveSummaryCard(right);
+  }
+
+  function nodeKey(stepIdx, pos) { return stepIdx + ":" + pos; }
+
+  function restorePinnedHighlight() {
+    if (!state.pinned) return;
+    var sel = '.node-circle[data-step="' + state.pinned.stepIdx + '"][data-pos="' + state.pinned.pos + '"]';
+    var node = el("trellisSvg").querySelector(sel);
+    if (node) { node.classList.add("pinned"); node.classList.add("pinned-pulse"); }
+    applyFade(state.pinned.stepIdx, state.pinned.pos);
+  }
+
+  // ---------------- interaction ----------------
+
+  function onHoverNode(stepIdx, pos) {
+    if (state.pinned) return;
+    renderInspector(stepIdx, pos, false);
+    state.focusedStep = stepIdx;
+    renderKeyboardAt(stepIdx, pos);
+    applyFade(stepIdx, pos);
+  }
+
+  function onClickNode(stepIdx, pos) {
+    var same = state.pinned && state.pinned.stepIdx === stepIdx && state.pinned.pos === pos;
+    if (same) { unpinNode(); return; }
+    document.querySelectorAll(".node-circle.pinned").forEach(function (n) {
+      n.classList.remove("pinned");
+      n.classList.remove("pinned-pulse");
+    });
+    state.pinned = { stepIdx: stepIdx, pos: pos };
+    renderInspector(stepIdx, pos, true);
+    state.focusedStep = stepIdx;
+    renderKeyboardAt(stepIdx, pos);
+    var sel = '.node-circle[data-step="' + stepIdx + '"][data-pos="' + pos + '"]';
+    var node = el("trellisSvg").querySelector(sel);
+    if (node) { node.classList.add("pinned"); node.classList.add("pinned-pulse"); }
+    applyFade(stepIdx, pos);
+  }
+
+  // The single escape hatch every exit path (Esc key, clear button, clicking empty
+  // trellis background, re-clicking the pinned node) routes through.
+  function unpinNode() {
+    if (!state.pinned) return;
+    document.querySelectorAll(".node-circle.pinned").forEach(function (n) {
+      n.classList.remove("pinned");
+      n.classList.remove("pinned-pulse");
+    });
+    state.pinned = null;
+    renderInspectorEmpty();
+    clearFade();
+  }
+
+  // Keeps three things lit while everything else fades: (1) the whole optimal path,
+  // always — so you can click backward along it to trace how earlier decisions
+  // cascaded forward; (2) every sibling in the clicked layer, matching the inspector's
+  // same-layer table; (3) the clicked node's own predecessor + the edge it actually used.
+  function applyFade(stepIdx, pos) {
+    var trace = cache.trace;
+    if (!trace) return;
+    var keepNodes = {}, keepEdges = {};
+
+    trace.steps[stepIdx].states.forEach(function (st) { keepNodes[nodeKey(stepIdx, st.pos)] = true; });
+
+    var s = trace.steps[stepIdx].states.filter(function (x) { return x.pos === pos; })[0];
+    if (s && s.kept_from !== null && s.kept_from !== undefined) {
+      keepNodes[nodeKey(stepIdx - 1, s.kept_from)] = true;
+      keepEdges[nodeKey(stepIdx - 1, s.kept_from) + ">" + nodeKey(stepIdx, pos)] = true;
+    }
+
+    var seq = cache.finalSeq;
+    for (var i = 0; i < seq.length; i++) {
+      keepNodes[nodeKey(i, seq[i])] = true;
+      if (i > 0) keepEdges[nodeKey(i - 1, seq[i - 1]) + ">" + nodeKey(i, seq[i])] = true;
+    }
+
+    var svg = el("trellisSvg");
+    svg.querySelectorAll(".node-circle").forEach(function (n) {
+      var k = nodeKey(parseInt(n.getAttribute("data-step"), 10), parseInt(n.getAttribute("data-pos"), 10));
+      n.classList.toggle("faded", !keepNodes[k]);
+    });
+    svg.querySelectorAll(".kept-edge, .final-edge").forEach(function (e) {
+      var k = e.getAttribute("data-edge-key");
+      e.classList.toggle("faded", !(k && keepEdges[k]));
+    });
+  }
+
+  function clearFade() {
+    var svg = el("trellisSvg");
+    svg.querySelectorAll(".faded").forEach(function (n) { n.classList.remove("faded"); });
+  }
+
+  function renderInspectorEmpty() {
+    var btn = el("inspectorClear"); if (btn) btn.style.display = "none";
+    setHTML("inspectorBody", '<p class="inspector-empty">Select a position to inspect it.</p>');
+    balanceTopRow();
+  }
+
+  // Shows every candidate hand position the optimizer weighed at this same instant —
+  // not just the one path taken — so it answers "why this note and not another one
+  // right here" rather than "what led into this note."
+  function renderInspector(stepIdx, pos, pinned) {
+    var btn = el("inspectorClear"); if (btn) btn.style.display = pinned ? "inline-flex" : "none";
+
+    var trace = cache.trace;
+    var step = trace.steps[stepIdx];
+    var s = step.states.filter(function (x) { return x.pos === pos; })[0];
+    if (!s) return;
+
+    var finalPos = cache.finalSeq[stepIdx];
+    var isFinal = finalPos === pos;
+
+    var sortedByCost = step.states.slice().sort(function (a, b) {
+      var ca = a.cost === null || a.cost === undefined ? Infinity : a.cost;
+      var cb = b.cost === null || b.cost === undefined ? Infinity : b.cost;
+      return ca - cb;
+    });
+
+    // Pin the chosen (final) row and the one you're looking at to the top, so they're
+    // always visible without scrolling even when the layer has many candidates —
+    // the rest still fill in below, cheapest first.
+    var rows = [];
+    var finalRow = step.states.filter(function (x) { return x.pos === finalPos; })[0];
+    if (finalRow) rows.push(finalRow);
+    if (!isFinal) rows.push(s);
+    sortedByCost.forEach(function (r) {
+      if (r.pos === finalPos) return;
+      if (!isFinal && r.pos === pos) return;
+      rows.push(r);
+    });
+
+    var html = '<p class="inspector-title">' +
+      "<b>" + noteName(pos) + "</b> · t=" + fmt(step.time) + "s" +
+      (isFinal ? ' <span style="color:var(--path-gold); font-weight:600;">· final path</span>' : "") +
+      "</p>";
+
+    var finalState = step.states.filter(function (x) { return x.pos === finalPos; })[0];
+    var finalCost = finalState ? finalState.cost : null;
+
+    // Full breakdown per sibling — not just its final cost, but the actual penalties
+    // (move/speed/finger, plus what it came from) that built that cost, so every row
+    // is quantitatively comparable to the one the algorithm actually chose.
+    html += '<div style="overflow-x:auto;"><table class="edges"><thead><tr>' +
+      '<th>Position</th>' +
+      '<th title="The position this candidate moved from on the previous note">From</th>' +
+      '<th title="Cost added for physically moving the hand">Move</th>' +
+      '<th title="Extra cost added if the move is faster than the hardware can go">Speed</th>' +
+      '<th title="Extra cost added for an awkward reach, splay, or black key">Finger</th>' +
+      '<th title="Lower is better - total difficulty of the path up to and including this note">Cost</th>' +
+      '<th title="How much more or less this candidate costs than the note actually used here">&Delta; chosen</th>' +
+      "</tr></thead><tbody>";
+    rows.forEach(function (r) {
+      var rFinal = r.pos === finalPos;
+      var rSelected = r.pos === pos && !rFinal;
+      var unreachable = r.cost === null || r.cost === undefined;
+      var rKept = (stepIdx > 0 && r.incoming) ? r.incoming.filter(function (e) { return e.from === r.kept_from; })[0] : null;
+      var fromLabel = stepIdx === 0 ? "start" : (rKept ? noteName(rKept.from) : "-");
+      var moveVal = stepIdx === 0 ? 0 : (rKept ? rKept.move_penalty : null);
+      var speedVal = stepIdx === 0 ? 0 : (rKept ? rKept.velocity_penalty : null);
+      var delta = (!unreachable && finalCost !== null && finalCost !== undefined) ? (r.cost - finalCost) : null;
+      html += '<tr class="' + (rFinal ? "kept" : rSelected ? "selected" : "") + '">' +
+        "<td>" + noteName(r.pos) + (rFinal ? " ★" : "") + (r.pos === pos ? " ●" : "") + "</td>" +
+        "<td>" + fromLabel + "</td>" +
+        "<td>" + fmt(moveVal) + "</td>" +
+        "<td>" + fmt(speedVal) + "</td>" +
+        "<td>" + fmt(r.fingering_penalty) + "</td>" +
+        "<td>" + fmt(r.cost) + "</td>" +
+        "<td>" + (rFinal ? "-" : fmtDelta(delta)) + "</td>" +
+        "</tr>";
+    });
+    html += "</tbody></table></div>";
+
+    var cheapest = sortedByCost[0];
+    if (finalState && cheapest) {
+      if (finalState.pos === cheapest.pos) {
+        html += '<p class="kept-note"><b class="mono">' + noteName(finalPos) + '</b> has the lowest cumulative cost (<b class="mono">' +
+          fmt(finalState.cost) + '</b>) of the ' + rows.length + ' positions considered here.</p>';
+      } else {
+        html += '<p class="kept-note"><b class="mono">' + noteName(finalPos) + '</b> costs <b class="mono">' + fmt(finalState.cost) +
+          '</b> here. <b class="mono">' + noteName(cheapest.pos) + '</b> was cheaper in the moment (<b class="mono">' + fmt(cheapest.cost) +
+          '</b>), but the optimal path threads through <b class="mono">' + noteName(finalPos) +
+          '</b> because it sets up a cheaper route through the rest of the piece.</p>';
+      }
+    }
+    setHTML("inspectorBody", html);
+    balanceTopRow();
+  }
+
+  function renderSummary() {
+    var trace = cache.trace;
+    var seq = cache.finalSeq;
+    var totalDist = 0, moves = 0, maxJump = 0, overSpeed = 0, fingerCost = 0;
+    for (var i = 1; i < seq.length; i++) {
+      var step = trace.steps[i];
+      var s = step.states.filter(function (x) { return x.pos === seq[i]; })[0];
+      var e = s.incoming.filter(function (x) { return x.from === s.kept_from; })[0];
+      if (!e) continue;
+      totalDist += e.distance;
+      if (e.distance > 0) moves++;
+      if (e.distance > maxJump) maxJump = e.distance;
+      if (e.velocity_penalty > 0) overSpeed++;
+      if (e.fingering_penalty > 0) fingerCost++;
+    }
+    var html = '<div class="stat-grid">' +
+      stat(fmt(trace.final_cost), "Effort score", "Total optimizer cost for this path - lower means an easier piece to play (technical name: total cost)") +
+      stat(seq.length, "Notes") +
+      stat(totalDist, "Distance moved", "Total keys traveled across the whole piece") +
+      stat(moves, "Hand repositions", "Number of times the hand had to move at all (technical name: position changes)") +
+      stat(maxJump, "Biggest single move", "The largest jump the hand had to make in one step (technical name: largest jump)") +
+      stat(overSpeed, "Too fast for motor", "Moves that exceed the hardware's speed limit (technical name: over speed limit)") +
+      stat(fingerCost, "Awkward reaches", "Notes that needed a stretch or a black key (technical name: splay / black key)") +
+      "</div>";
+    setHTML("summaryBody", html);
+    balanceTopRow();
+  }
+  function stat(v, l, tooltip) {
+    return '<div class="stat-tile"' + (tooltip ? ' title="' + tooltip + '"' : "") + '><div class="v mono">' + v + '</div><div class="l">' + l + "</div></div>";
+  }
+
+  // ---------------- piano roll (falling notes + keyboard) ----------------
+
+  var ROLL_FALL_H = 320, ROLL_PX_PER_SEC = 44, ROLL_MIN_BAR_H = 12;
+  var ROLL_LOOKAHEAD = ROLL_FALL_H / ROLL_PX_PER_SEC;
+  var PIANO_LO = 0, PIANO_HI = 51; // A0..C8, full 88-key piano (white-key index space)
+  var ROLL_KW = 44, ROLL_KH = 128, ROLL_BW = 26, ROLL_BH = 80;
+
+  var rollBuilt = false;
+  var rollWhiteKeyEls = {}; // pos -> <rect> (built once; only class + auto-scroll target change per frame)
+
+  function buildRollStatic() {
+    var lo = PIANO_LO, hi = PIANO_HI, kw = ROLL_KW, kh = ROLL_KH;
+    var n = hi - lo + 1;
+    var kbY = ROLL_FALL_H + 4;
+    var svg = el("rollSvg");
+    svg.innerHTML = "";
+    svg.setAttribute("viewBox", "0 0 " + (n * kw + 8) + " " + (kbY + kh + 14));
+
+    var keysGroup = svgEl("g", { id: "rollKeysGroup" });
+    for (var p = lo; p <= hi; p++) {
+      var xw = (p - lo) * kw + 4;
+      var rect = svgEl("rect", { x: xw, y: kbY, width: kw - 2, height: kh, rx: 3, class: "white-key" });
+      keysGroup.appendChild(rect);
+      var lbl = textEl("text", xw + (kw - 2) / 2, kbY + kh - 6, noteName(p), "key-label");
+      lbl.setAttribute("text-anchor", "middle");
+      keysGroup.appendChild(lbl);
+      rollWhiteKeyEls[p] = rect;
+    }
+    svg.appendChild(keysGroup);
+    svg.appendChild(svgEl("line", { x1: 0, x2: n * kw + 8, y1: ROLL_FALL_H, y2: ROLL_FALL_H, class: "now-line" }));
+    svg.appendChild(svgEl("g", { id: "rollDynamicGroup" }));
+    rollBuilt = true;
+  }
+
+  function updateRollScale() {
+    var n = PIANO_HI - PIANO_LO + 1;
+    var kbY = ROLL_FALL_H + 4;
+    var svg = el("rollSvg");
+    svg.setAttribute("width", (n * ROLL_KW + 8) * RS);
+    svg.setAttribute("height", (kbY + ROLL_KH + 14) * RS);
+  }
+
+  function renderKeyboard() {
+    var i = state.focusedStep;
+    var trace = cache.trace;
+    renderRollFrame(trace.steps[i].time, i, trace.steps[i], cache.finalSeq[i]);
+  }
+
+  function renderKeyboardAt(stepIdx, thumbPos) {
+    var step = cache.trace.steps[stepIdx];
+    renderRollFrame(step.time, stepIdx, step, thumbPos);
+  }
+
+  // Shared draw: currentTime is a continuous clock (not necessarily a step's exact
+  // time) so playback can render in-between frames for smooth, tempo-accurate motion.
+  function renderRollFrame(currentTime, nowStepIdx, nowStep, thumbPos) {
+    if (!rollBuilt) buildRollStatic();
+    updateRollScale();
+
+    var trace = cache.trace;
+    var lo = PIANO_LO, hi = PIANO_HI, kw = ROLL_KW, bw = ROLL_BW, bh = ROLL_BH;
+    var kbY = ROLL_FALL_H + 4;
+    var dyn = el("rollSvg").querySelector("#rollDynamicGroup");
+    dyn.innerHTML = "";
+
+    trace.steps.forEach(function (s) {
+      var dt = s.time - currentTime;
+      if (dt < 0 || dt > ROLL_LOOKAHEAD) return;
+      var bottom = ROLL_FALL_H - dt * ROLL_PX_PER_SEC;
+      s.notes.forEach(function (note, idx) {
+        if (note < lo || note > hi) return;
+        var isBlack = s.is_black[idx];
+        var dur = (s.durations && s.durations[idx]) || 0.5;
+        var barH = Math.max(ROLL_MIN_BAR_H, dur * ROLL_PX_PER_SEC);
+        var x = isBlack ? (note - lo) * kw + 4 + (kw - 2) - bw / 2 : (note - lo) * kw + 4;
+        var w = isBlack ? bw : kw - 2;
+        var cls = "roll-bar" + (s.index === nowStepIdx ? " now" : "") + (isBlack ? " black" : "");
+        dyn.appendChild(svgEl("rect", { x: x, y: bottom - barH, width: w, height: barH, rx: 3, class: cls }));
+      });
+    });
+
+    nowStep.notes.forEach(function (note, idx) {
+      if (!nowStep.is_black[idx]) return;
+      var xb = (note - lo) * kw + 4 + (kw - 2) - bw / 2;
+      dyn.appendChild(svgEl("rect", { x: xb, y: kbY, width: bw, height: bh, rx: 3, class: "black-diamond" }));
+    });
+
+    var requiredSet = {};
+    nowStep.notes.forEach(function (note, idx) {
+      if (!nowStep.is_black[idx]) requiredSet[note] = true;
+    });
+    for (var p = lo; p <= hi; p++) {
+      var rect = rollWhiteKeyEls[p];
+      if (!rect) continue;
+      rect.setAttribute("class", "white-key" + (requiredSet[p] ? " required" : "") + (p === thumbPos ? " thumb" : ""));
+    }
+
+    setRollScrollTarget(thumbPos, lo, kw);
+  }
+
+  // Continuous smooth-scroll: a persistent easing loop (started once, in startRollScrollLoop)
+  // glides rollWrap.scrollLeft toward this target every frame, so every trigger (hover,
+  // click, step buttons, playback) shares one continuous motion instead of restarting
+  // the browser's own smooth-scroll on each discrete jump.
+  var rollScrollTarget = null;
+  function setRollScrollTarget(thumbPos, lo, kw) {
+    var wrap = el("rollWrap");
+    if (!wrap || thumbPos === null || thumbPos === undefined) return;
+    var keyCenter = ((thumbPos - lo) * kw + 4 + (kw - 2) / 2) * RS + 16;
+    var target = keyCenter - wrap.clientWidth / 2;
+    var maxScroll = wrap.scrollWidth - wrap.clientWidth;
+    rollScrollTarget = Math.max(0, Math.min(maxScroll, target));
+  }
+  function startRollScrollLoop() {
+    function frame() {
+      var wrap = el("rollWrap");
+      if (wrap && rollScrollTarget !== null) {
+        var diff = rollScrollTarget - wrap.scrollLeft;
+        if (REDUCE_MOTION || Math.abs(diff) < 0.5) wrap.scrollLeft = rollScrollTarget;
+        else wrap.scrollLeft += diff * 0.18;
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------------- particle flow (final path) ----------------
+
+  function sizeParticleCanvas() {
+    var canvas = el("particleCanvas");
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, cache.width * TS * dpr);
+    canvas.height = Math.max(1, cache.height * TS * dpr);
+    canvas.style.width = cache.width * TS + "px";
+    canvas.style.height = cache.height * TS + "px";
+    particleCtx = canvas.getContext("2d");
+    particleCtx.setTransform(dpr * TS, 0, 0, dpr * TS, 0, 0);
+  }
+
+  function drawParticlesFrame(elapsedMs) {
+    if (!particleCtx || !cache.trace || !cache.finalSeq) return;
+    particleCtx.clearRect(0, 0, cache.width, cache.height);
+    if (state.revealCount < cache.finalSeq.length) return; // only once the backtracked path is fully shown
+    var seq = cache.finalSeq;
+    var speedPxPerSec = 55, dotsPerEdge = 3, dotRadius = 2.1;
+    particleCtx.fillStyle = PARTICLE_COLOR;
+    for (var i = 1; i < seq.length; i++) {
+      var x1 = cache.xFor(i - 1), y1 = cache.yFor(seq[i - 1]);
+      var x2 = cache.xFor(i), y2 = cache.yFor(seq[i]);
+      var len = Math.hypot(x2 - x1, y2 - y1);
+      var durMs = Math.max(500, (len / speedPxPerSec) * 1000);
+      for (var d = 0; d < dotsPerEdge; d++) {
+        var phase = ((elapsedMs / durMs) + d / dotsPerEdge + i * 0.11) % 1;
+        var px = x1 + (x2 - x1) * phase, py = y1 + (y2 - y1) * phase;
+        particleCtx.globalAlpha = 0.55 + 0.45 * Math.sin(phase * Math.PI);
+        particleCtx.beginPath();
+        particleCtx.arc(px, py, dotRadius, 0, Math.PI * 2);
+        particleCtx.fill();
+      }
+    }
+    particleCtx.globalAlpha = 1;
+  }
+
+  function startParticles() {
+    if (REDUCE_MOTION || particleRAF) return;
+    var t0 = performance.now();
+    function frame(now) {
+      drawParticlesFrame(now - t0);
+      particleRAF = requestAnimationFrame(frame);
+    }
+    particleRAF = requestAnimationFrame(frame);
+  }
+
+  // ---------------- audio (real note pitches, scheduled to the same clock as playback) ----------------
+
+  var audioCtx = null;
+  var scheduledAudioNodes = [];
+
+  function ensureAudioContext() {
+    if (!audioCtx) {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      audioCtx = new Ctx();
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+
+  // Note names in this data are always sharp-or-natural (e.g. "G5", "G#4"), matching
+  // midi_to_note_name() in the optimizer, so a simple regex covers every case.
+  function noteNameToFreq(name) {
+    var m = /^([A-G])(#?)(-?\d+)$/.exec(name);
+    if (!m) return null;
+    var semitoneFromC = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]];
+    var midi = (parseInt(m[3], 10) + 1) * 12 + semitoneFromC + (m[2] === "#" ? 1 : 0);
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  function playTone(ctx, freq, when, dur) {
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0, when);
+    gain.gain.linearRampToValueAtTime(0.14, when + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0008, when + dur);
+    osc.start(when);
+    osc.stop(when + dur + 0.02);
+    scheduledAudioNodes.push(osc);
+    osc.onended = function () {
+      var idx = scheduledAudioNodes.indexOf(osc);
+      if (idx !== -1) scheduledAudioNodes.splice(idx, 1);
+    };
+  }
+
+  // Schedules every note from fromStepIdx onward against the Web Audio clock (not the
+  // visual requestAnimationFrame loop) so playback stays sample-accurate even if a
+  // frame is dropped; audioStart/time0 share the same reference startPlayback() uses
+  // for the trellis and roll, so sound and visuals never drift apart.
+  function scheduleAudio(trace, fromStepIdx, time0, audioStart) {
+    if (!state.audioEnabled) return;
+    var ctx = ensureAudioContext();
+    if (!ctx) return;
+    for (var i = fromStepIdx; i < trace.steps.length; i++) {
+      var step = trace.steps[i];
+      var when = audioStart + (step.time - time0) / state.playbackRate;
+      step.keys.forEach(function (keyName, idx) {
+        var freq = noteNameToFreq(keyName);
+        if (!freq) return;
+        var dur = ((step.durations && step.durations[idx]) || 0.5) / state.playbackRate;
+        playTone(ctx, freq, when, Math.max(0.12, dur * 0.9));
+      });
+    }
+  }
+
+  function stopAudio() {
+    scheduledAudioNodes.forEach(function (osc) {
+      try { osc.stop(0); } catch (e) { /* already stopped */ }
+    });
+    scheduledAudioNodes = [];
+  }
+
+  // ---------------- playback ----------------
+
+  function updateScrubberLabel() {
+    var trace = cache.trace;
+    var i = state.revealCount - 1;
+    if (i < 0) i = 0;
+    var step = trace.steps[Math.min(i, trace.steps.length - 1)];
+    el("stepReadout").textContent = (state.revealCount) + " / " + trace.steps.length + "  t=" + fmt(step.time) + "s";
+  }
+
+  function syncRollToReveal() {
+    if (state.pinned) return;
+    var trace = cache.trace;
+    var i = Math.min(state.revealCount - 1, trace.steps.length - 1);
+    if (i < 0) i = 0;
+    state.focusedStep = i;
+    renderKeyboard();
+  }
+
+  function stopPlayback() {
+    state.playing = false;
+    if (state.playRAF) { cancelAnimationFrame(state.playRAF); state.playRAF = null; }
+    stopAudio();
+    el("btnPlay").textContent = "▶";
+    el("btnPlay").classList.remove("play");
+  }
+
+  // Driven by a real elapsed-time clock (not a fixed per-note interval), so the tree
+  // reveal and the falling notes move as one continuous, tempo-accurate motion instead
+  // of a robotic constant step. 1 music-second of `time` = 1 real second at rate 1.
+  function startPlayback() {
+    var trace = cache.trace;
+    if (state.revealCount >= trace.steps.length) {
+      state.revealCount = 1;
+      applyReveal(); // hide the fully-grown resting view before regrowing from the start
+    }
+    state.playing = true;
+    el("btnPlay").textContent = "❙❙";
+    el("btnPlay").classList.add("play");
+
+    var clockStart = performance.now();
+    var time0 = trace.steps[Math.max(0, state.revealCount - 1)].time;
+    var lastRevealCount = state.revealCount;
+
+    var actx = ensureAudioContext();
+    if (actx) scheduleAudio(trace, Math.max(0, state.revealCount - 1), time0, actx.currentTime + 0.05);
+
+    function frame(now) {
+      if (!state.playing) return;
+      var virtualTime = time0 + ((now - clockStart) / 1000) * state.playbackRate;
+
+      var idx = 0;
+      while (idx < trace.steps.length && trace.steps[idx].time <= virtualTime) idx++;
+      state.revealCount = Math.max(1, idx);
+
+      var done = state.revealCount >= trace.steps.length;
+      if (done) state.revealCount = trace.steps.length;
+
+      // The trellis only changes at step boundaries — grow each newly-crossed layer
+      // node-by-node instead of doing a full reveal pass 60x/sec.
+      if (state.revealCount !== lastRevealCount) {
+        for (var gi = lastRevealCount; gi < state.revealCount; gi++) growLayer(gi);
+        lastRevealCount = state.revealCount;
+        updateFinalGroupVisibility();
+        el("scrubber").value = Math.min(state.revealCount - 1, trace.steps.length - 1);
+        updateScrubberLabel();
+      }
+
+      // The roll's falling motion is continuous, so it redraws every frame.
+      if (!state.pinned) {
+        var refIdx = Math.min(state.revealCount - 1, trace.steps.length - 1);
+        var refTime = done ? trace.steps[refIdx].time : virtualTime;
+        renderRollFrame(refTime, refIdx, trace.steps[refIdx], cache.finalSeq[refIdx]);
+        state.focusedStep = refIdx;
+      }
+
+      if (done) { stopPlayback(); pulseFinalPath(); return; }
+      state.playRAF = requestAnimationFrame(frame);
+    }
+    state.playRAF = requestAnimationFrame(frame);
+  }
+
+  function pulseFinalPath() {
+    var seq = cache.finalSeq;
+    var i = seq.length - 1;
+    function step() {
+      if (i < 0) return;
+      var sel = '.node-circle[data-step="' + i + '"][data-pos="' + seq[i] + '"]';
+      var node = el("trellisSvg").querySelector(sel);
+      if (node) { node.classList.remove("pulse"); void node.offsetWidth; node.classList.add("pulse"); }
+      i--;
+      setTimeout(step, 90);
+    }
+    step();
+  }
+
+  function wireControls() {
+    el("btnPlay").addEventListener("click", function () {
+      if (state.playing) stopPlayback(); else startPlayback();
+    });
+    el("btnReset").addEventListener("click", function () {
+      stopPlayback();
+      state.revealCount = 1;
+      el("scrubber").value = 0;
+      applyReveal();
+      updateScrubberLabel();
+      syncRollToReveal();
+    });
+    el("btnStepBack").addEventListener("click", function () {
+      stopPlayback();
+      state.revealCount = Math.max(1, state.revealCount - 1);
+      el("scrubber").value = state.revealCount - 1;
+      applyReveal();
+      updateScrubberLabel();
+      syncRollToReveal();
+    });
+    el("btnStepFwd").addEventListener("click", function () {
+      stopPlayback();
+      var wasBelowEnd = state.revealCount < cache.trace.steps.length;
+      state.revealCount = Math.min(cache.trace.steps.length, state.revealCount + 1);
+      el("scrubber").value = state.revealCount - 1;
+      if (wasBelowEnd) { growLayer(state.revealCount - 1); updateFinalGroupVisibility(); }
+      updateScrubberLabel();
+      syncRollToReveal();
+    });
+    el("scrubber").addEventListener("input", function () {
+      stopPlayback();
+      state.revealCount = parseInt(el("scrubber").value, 10) + 1;
+      applyReveal();
+      updateScrubberLabel();
+      syncRollToReveal();
+    });
+    el("ghostToggle").addEventListener("change", function () {
+      state.showGhosts = el("ghostToggle").checked;
+      drawTrellis();
+    });
+    el("audioToggle").addEventListener("change", function () {
+      state.audioEnabled = el("audioToggle").checked;
+      if (!state.audioEnabled) stopAudio();
+    });
+    el("scrollWrap").addEventListener("pointerleave", function () {
+      if (!state.pinned) clearFade();
+    });
+    el("inspectorClear").addEventListener("click", unpinNode);
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && state.pinned) unpinNode();
+    });
+    el("trellisSvg").addEventListener("click", function (ev) {
+      if (ev.target === el("trellisSvg") && state.pinned) unpinNode();
+    });
+
+    document.querySelectorAll("#scenarioToggle button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        state.scenario = b.getAttribute("data-scenario");
+        onSongOrScenarioChanged();
+      });
+    });
+    window.addEventListener("resize", onResize);
+    document.querySelectorAll("#handTabs button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (b.disabled) return;
+        state.hand = b.getAttribute("data-hand");
+        renderHandTabs(availableHands());
+        stopPlayback();
+        state.pinned = null;
+        renderMain();
+      });
+    });
+  }
+
+  // ---------------- boot ----------------
+
+  function hideLoadingScreen() {
+    var ls = el("loadingScreen");
+    if (!ls) return;
+    ls.classList.add("loading-done");
+    setTimeout(function () { ls.style.display = "none"; }, 450);
+  }
+
+  var enterBtn = el("loadingEnterBtn");
+  if (enterBtn) enterBtn.addEventListener("click", function () {
+    if (!enterBtn.classList.contains("ready")) return;
+    hideLoadingScreen();
+    if (cache.trace && !state.playing) startPlayback();
+  });
+
+  // The trace data can exceed some static hosts' single-file size limits once
+  // enough songs are included, so it is split into chunks listed in a manifest
+  // and merged here, rather than fetched as one file.
+  fetch("data-manifest.json").then(function (r) { return r.json(); }).then(function (chunkNames) {
+    return Promise.all(chunkNames.map(function (name) {
+      return fetch(name).then(function (r) { return r.json(); });
+    }));
+  }).then(function (chunks) {
+    var json = {};
+    chunks.forEach(function (chunk) {
+      for (var k in chunk) json[k] = chunk[k];
+    });
+    DATA = json;
+    buildSongsList();
+    populateSongSelect();
+    renderChips();
+    wireControls();
+    onSongOrScenarioChanged();
+    startParticles();
+    startRollScrollLoop();
+    if (enterBtn) {
+      enterBtn.disabled = false;
+      enterBtn.textContent = "Enter dashboard";
+      enterBtn.classList.add("ready");
+    }
+  }).catch(function (err) {
+    el("playableView").innerHTML = '<div class="card-body"><p style="color:var(--critical)">Could not load trellis data: ' + err + "</p></div>";
+    if (enterBtn) {
+      enterBtn.disabled = false;
+      enterBtn.textContent = "Continue anyway";
+      enterBtn.classList.add("ready");
+    }
+  });
+})();
+</script>
