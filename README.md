@@ -1,7 +1,5 @@
 # PokéMe: Tyler Kei's Portfolio Adventure
 
-**Live site: https://tyler-kei.vercel.app**
-
 PokéMe is my personal portfolio website, built as a small playable game in the style of
 Pokémon Black & White. Instead of scrolling a page, visitors walk through places from my
 life, from my hometown in New York to Purdue University, and finish in a Hall of Fame that
