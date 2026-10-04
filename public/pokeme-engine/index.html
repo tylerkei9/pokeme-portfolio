@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How I built PokéMe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --surface-page: #eef0f4; --surface-card: #f8f9fb; --surface-sunken: #e6e8ee;
+    --text-primary: #10131c; --text-secondary: #4c5266; --text-muted: #7a8096;
+    --border: rgba(16,19,28,0.10); --border-strong: rgba(16,19,28,0.20);
+    --grid: #dcdfe8; --baseline: #b8bdcc;
+    --accent: #2f8797; --accent-soft: #d7eef1;
+    --path-gold: #c97a4a; --path-gold-soft: #f7ebe0;
+    --good: #5c8f57; --purple: #8b74ad; --purple-soft: #ece4f5;
+    --critical: #b5524a; --critical-soft: #fbe4e1;
+    --seq-1: #d7eef1; --seq-2: #aedbe1; --seq-3: #82c6cf; --seq-4: #57b0bc; --seq-5: #3a94a1; --seq-6: #2a7482; --seq-7: #1a4d57;
+    --shadow: 0 1px 2px rgba(16,19,28,0.06), 0 8px 24px rgba(16,19,28,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-page: #0a0d14; --surface-card: #141926; --surface-sunken: #0f131d;
+      --text-primary: #eef1f8; --text-secondary: #9aa1b8; --text-muted: #656d84;
+      --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.16);
+      --grid: #232a3a; --baseline: #333c52;
+      --accent: #5bc0d1; --accent-soft: #163338;
+      --path-gold: #e6a06a; --path-gold-soft: #3d2c1a;
+      --good: #8fc488; --purple: #b49bd6; --purple-soft: #332a47;
+      --critical: #e08079; --critical-soft: #3d201e;
+      --seq-1: #163338; --seq-2: #1d454c; --seq-3: #276068; --seq-4: #358490; --seq-5: #4ba7b3; --seq-6: #74c4cd; --seq-7: #a8dde6;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 28px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-page: #0a0d14; --surface-card: #141926; --surface-sunken: #0f131d;
+    --text-primary: #eef1f8; --text-secondary: #9aa1b8; --text-muted: #656d84;
+    --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.16);
+    --grid: #232a3a; --baseline: #333c52;
+    --accent: #5bc0d1; --accent-soft: #163338;
+    --path-gold: #e6a06a; --path-gold-soft: #3d2c1a;
+    --good: #8fc488; --purple: #b49bd6; --purple-soft: #332a47;
+    --critical: #e08079; --critical-soft: #3d201e;
+    --seq-1: #163338; --seq-2: #1d454c; --seq-3: #276068; --seq-4: #358490; --seq-5: #4ba7b3; --seq-6: #74c4cd; --seq-7: #a8dde6;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 28px rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--surface-page); color: var(--text-primary);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 14px; }
+
+  .card { background: var(--surface-card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  .card-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  .card-head .sub { color: var(--text-muted); font-size: 12.5px; }
+  .card-body { padding: 14px 16px; }
+
+  header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  header.top h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  header.top p { margin: 4px 0 0; color: var(--text-secondary); max-width: 760px; line-height: 1.5; }
+  .head-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .btn { background: var(--surface-sunken); border: 1px solid var(--border-strong); color: var(--text-primary);
+    border-radius: 8px; padding: 6px 12px; font: 600 12.5px 'IBM Plex Sans'; cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--surface-card); border-color: var(--accent); }
+
+  .about p { margin: 0 0 6px; line-height: 1.55; color: var(--text-secondary); }
+  .about p:last-child { margin: 0; }
+
+  .top-row { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; }
+  .segmented { display: inline-flex; flex-wrap: wrap; background: var(--surface-sunken); border: 1px solid var(--border-strong); border-radius: 8px; padding: 2px; gap: 2px; }
+  .segmented button { border: none; background: transparent; color: var(--text-secondary); padding: 5px 10px; border-radius: 6px;
+    font: 600 12px 'IBM Plex Sans'; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .segmented button.active { background: var(--surface-card); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .segmented button .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .control-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .control-row:last-child { margin-bottom: 0; }
+  .label { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  select { background: var(--surface-sunken); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 6px 10px; font: 500 13px 'IBM Plex Sans'; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .stat-tile { background: var(--surface-sunken); border-radius: 8px; padding: 9px 11px; cursor: help; }
+  .stat-tile .v { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+  .stat-tile .l { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { display: flex; align-items: baseline; gap: 6px; background: var(--surface-sunken); border: 1px solid var(--border); border-radius: 8px; padding: 5px 9px; cursor: help; }
+  .chip .k { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .chip .v { font-size: 12.5px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+
+  /* journey graph */
+  #journey { width: 100%; height: 176px; display: block; }
+  #journey .edge { stroke: var(--baseline); stroke-width: 2; }
+  #journey .node circle { fill: var(--surface-sunken); stroke: var(--border-strong); stroke-width: 1.5; cursor: pointer; transition: fill .15s, stroke .15s; }
+  #journey .node:hover circle { stroke: var(--accent); }
+  #journey .node.active circle { fill: var(--path-gold-soft); stroke: var(--path-gold); stroke-width: 2.5; }
+  #journey .node text { font: 500 11px 'IBM Plex Sans'; fill: var(--text-secondary); text-anchor: middle; pointer-events: none; }
+  #journey .node.active text { fill: var(--text-primary); font-weight: 700; }
+  #journey .node .num { font: 600 11px 'IBM Plex Mono'; fill: var(--text-muted); }
+  #journey .tag { font: 500 10px 'IBM Plex Mono'; fill: var(--purple); text-anchor: middle; }
+
+  /* hero */
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; align-items: start; }
+  .map-stage { position: relative; background: var(--surface-sunken); border-radius: 10px; overflow: auto; max-height: 640px; display: flex; justify-content: center; padding: 10px; }
+  #map { image-rendering: pixelated; cursor: crosshair; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-secondary); margin-top: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 14px; height: 10px; display: inline-block; border-radius: 2px; }
+
+  .inspector { display: flex; flex-direction: column; gap: 10px; }
+  .inspector .empty { color: var(--text-muted); line-height: 1.5; }
+  .insp-row { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: baseline; font-size: 13px; }
+  .insp-row .k { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .terrain-sw { width: 28px; height: 28px; image-rendering: pixelated; border-radius: 4px; border: 1px solid var(--border-strong); vertical-align: middle; margin-right: 8px; }
+  .prop-card { background: var(--surface-sunken); border: 1px solid var(--border); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .prop-card img { width: 100%; aspect-ratio: 4/3; object-fit: contain; image-rendering: pixelated; }
+  .prop-card .name { font: 600 13px 'IBM Plex Mono'; color: var(--path-gold); }
+  .prop-card .meta { font-size: 12px; color: var(--text-secondary); line-height: 1.45; }
+  .rowstrip { background: var(--surface-sunken); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; overflow-x: auto; white-space: pre; font: 12.5px 'IBM Plex Mono'; color: var(--text-muted); }
+  .rowstrip b { color: var(--path-gold); background: var(--path-gold-soft); border-radius: 2px; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; }
+  .status.ok { color: var(--good); } .status.no { color: var(--critical); }
+
+  /* code */
+  .bars { display: grid; grid-template-columns: 170px 1fr 52px; gap: 5px 10px; align-items: center; font-size: 12.5px; }
+  .bars .f { font-family: 'IBM Plex Mono', monospace; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bars .b { height: 10px; border-radius: 3px; background: var(--seq-4); }
+  .bars .n { font-family: 'IBM Plex Mono', monospace; color: var(--text-muted); text-align: right; }
+  .bars .grp { grid-column: 1 / -1; margin-top: 6px; }
+
+  /* loading */
+  #loading { position: fixed; inset: 0; background: var(--surface-page); z-index: 10; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 26px; padding: 24px; transition: opacity .35s; }
+  #loading.gone { opacity: 0; pointer-events: none; }
+  .pipe { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .pipe .st { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px; text-align: center; }
+  .pipe .ico { width: 62px; height: 62px; border-radius: 12px; background: var(--surface-card); border: 1px solid var(--border-strong);
+    display: grid; place-items: center; font: 600 12px 'IBM Plex Mono'; color: var(--accent); box-shadow: var(--shadow); }
+  .pipe .st span { font-size: 12px; color: var(--text-secondary); }
+  .pipe .arrow { width: 30px; height: 2px; background: var(--baseline); position: relative; overflow: hidden; }
+  .pipe .arrow::after { content: ''; position: absolute; inset: 0; width: 40%; background: var(--accent); animation: chase 1.4s linear infinite; }
+  @keyframes chase { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+  @media (prefers-reduced-motion: reduce) { .pipe .arrow::after { animation: none; } }
+  .loading-label { color: var(--text-muted); font-size: 13px; margin: 0; }
+
+  @media (max-width: 980px) { .top-row, .hero-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="pipe" aria-label="How the game is built">
+    <div class="st"><div class="ico">{ }</div><span>Map data<br>(a text grid)</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">TS</div><span>TypeScript engine</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">▦</div><span>Art painted<br>in code</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">3D</div><span>Three.js world</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">UI</div><span>React windows</span></div>
+  </div>
+  <p class="loading-label" id="loadingLabel">Loading the real map data.</p>
+  <button class="btn primary" id="enterBtn" disabled>Loading.</button>
+</div>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>How I built PokéMe</h1>
+      <p>Every area in this game is a short data file: a grid of letters for the ground, plus a list of buildings and objects.
+        The engine I wrote turns that data into the 3D world you walk through. Pick an area below and hover any square to see
+        the data behind it.</p>
+    </div>
+    <div class="head-actions">
+      <a class="btn" href="https://github.com/tylerkei9/pokeme-portfolio" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <button class="btn" id="themeBtn" title="Switch between light and dark">Theme</button>
+    </div>
+  </header>
+
+  <details class="card about" open>
+    <summary class="card-head"><h2>About this project</h2><span class="sub">Click to hide</span></summary>
+    <div class="card-body">
+      <p>My personal portfolio website, built as a playable Pokémon Black &amp; White style game. I wrote the 3D engine from scratch
+        in strict TypeScript on Three.js: a game loop, tile movement and collision, a camera per area, and billboarded sprites.
+        No 3D models were used. Every building and object is built and painted in code when the game loads, which keeps the
+        game code to about 240 KB.</p>
+      <p><strong>Stack:</strong> TypeScript, Three.js (WebGL), Canvas 2D, React, Zustand, Vite, Tailwind CSS</p>
+    </div>
+  </details>
+
+  <div class="top-row">
+    <div class="card">
+      <div class="card-head"><h2>Explore an area</h2><span class="sub">Real data from the game's map files</span></div>
+      <div class="card-body">
+        <div class="control-row">
+          <span class="label" title="Each of the 12 areas is one TypeScript file in src/maps/.">Area</span>
+          <select id="mapSelect" aria-label="Choose an area"></select>
+        </div>
+        <div class="control-row">
+          <span class="label" title="Turn the layers of the map data on and off.">Show</span>
+          <div class="segmented" id="layers">
+            <button data-layer="terrain" class="active" title="The ground: each square is one letter in the map's ground grid, painted by the engine."><span class="sw" style="background:#8fb06f"></span>Ground</button>
+            <button data-layer="solid" class="active" title="Squares you can't walk onto: trees, water, walls, and the footprint of every solid object."><span class="sw" style="background:repeating-linear-gradient(45deg,#000 0 2px,transparent 2px 4px)"></span>Blocked</button>
+            <button data-layer="props" class="active" title="Buildings and objects. Each one is a function in the engine that builds it from simple shapes."><span class="sw" style="border:2px solid var(--text-secondary)"></span>Objects</button>
+            <button data-layer="warps" class="active" title="Exits: stepping here moves you to another area."><span class="sw" style="background:var(--accent)"></span>Exits</button>
+            <button data-layer="triggers" class="active" title="Walk-up spots: stepping here opens an exhibit (used in the Hall of Fame)."><span class="sw" style="border:2px dashed var(--purple)"></span>Walk-up spots</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>By the numbers</h2><span class="sub">Counted from the source code</span></div>
+      <div class="card-body">
+        <div class="stat-grid" id="stats"></div>
+        <div class="chip-row" id="chips"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>The journey</h2><span class="sub">The 12 areas and the exits that join them. Click one to explore it.</span></div>
+    <div class="card-body" style="padding-top:6px;padding-bottom:6px"><svg id="journey" role="img" aria-label="Map of the 12 areas"></svg></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2 id="mapTitle">Area</h2><span class="sub" id="mapSub"></span></div>
+    <div class="card-body">
+      <div class="hero-grid">
+        <div>
+          <div class="map-stage"><canvas id="map"></canvas></div>
+          <div class="legend">
+            <span><i style="background:repeating-linear-gradient(45deg,rgba(0,0,0,.55) 0 2px,transparent 2px 4px)"></i>Blocked square</span>
+            <span><i style="border:2px solid var(--text-secondary)"></i>Object footprint</span>
+            <span><i style="background:var(--accent)"></i>Exit to another area</span>
+            <span><i style="border:2px dashed var(--purple)"></i>Walk-up exhibit spot</span>
+            <span><i style="border:2px solid var(--path-gold)"></i>Selected square</span>
+          </div>
+        </div>
+        <aside class="inspector" id="inspector" aria-live="polite"></aside>
+      </div>
+    </div>
+  </div>
+
+  <details class="card">
+    <summary class="card-head"><h2>Where the code lives</h2><span class="sub">Lines per file, largest first. Click to open.</span></summary>
+    <div class="card-body"><div class="bars" id="bars"></div></div>
+  </details>
+</div>
+
+<script>
+const TERRAIN = {
+  g: ['Grass', 'Short grass with little tufts'], f: ['Flowers', 'Grass with scattered flowers'], G: ['Tall grass', 'Tall grass tufts'],
+  o: ['Orange flowers', 'Grass with orange flower clusters'], W: ['Water', 'An animated water surface'], T: ['Tree', 'A conifer (blocks movement)'],
+  Y: ['Autumn tree', 'An orange autumn tree (blocks movement)'], r: ['Red maple', 'A red maple, as around Purdue (blocks movement)'],
+  p: ['Dirt path', 'A soft dirt road with ragged grass edges'], s: ['Cobblestone', 'Grey cobblestone'], q: ['Flagstone', 'Rounded bridge flagstones'],
+  z: ['Cave floor', 'Dark mossy cave floor'], X: ['Cave wall', 'Rock wall (blocks movement)'], R: ['Boulder', 'A boulder (blocks movement)'],
+  h: ['Hall mosaic', 'The Hall of Fame floor'], u: ['Curb', 'Stone curb along the bridge (blocks movement)'], a: ['Asphalt', 'City street'],
+  d: ['Concrete', 'Sidewalk concrete'], b: ['Brick', 'Brick paving'], v: ['Court sand', 'Volleyball court sand'], j: ['Court', 'Basketball court surface'],
+  w: ['Wood floor', 'Indoor wood floor'], c: ['Carpet', 'Carpet'], k: ['Kitchen tile', 'Kitchen tile'], m: ['Door mat', 'A door mat'],
+  ' ': ['Void', 'Empty space outside a room (blocks movement)'],
+}
+const NICE = { bedroom: 'Bedroom', house1f: 'House', turnersGym: 'Turners Gym' }
+const BUNDLE_KB = 242 // gzipped game code, measured from the production build (npm run build)
+let D, cur = null, layers = new Set(['terrain', 'solid', 'props', 'warps', 'triggers']), hover = null, pinned = null
+const swatch = {}, thumbs = {}
+
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
+const nameOf = (m) => NICE[m.id] || m.name
+const $ = (id) => document.getElementById(id)
+
+async function load() {
+  D = await (await fetch('data.json')).json()
+  await Promise.all(D.terrainChars.map((ch) => new Promise((res) => {
+    const im = new Image(); im.onload = res; im.onerror = res; im.src = `terrain/${ch.charCodeAt(0)}.png`; swatch[ch] = im
+  })))
+  D.propKinds.forEach((p) => { thumbs[p.kind] = `props/${p.kind}.png` })
+  init()
+  $('loadingLabel').textContent = `Loaded ${D.maps.length} areas, ${D.propKinds.length} object types, and ${D.terrainChars.length} ground types.`
+  $('enterBtn').disabled = false
+  $('enterBtn').textContent = 'Enter dashboard'
+}
+$('enterBtn').addEventListener('click', () => $('loading').classList.add('gone'))
+
+function init() {
+  // area picker, in journey order
+  const order = journeyOrder()
+  $('mapSelect').innerHTML = order.map((id) => {
+    const m = D.maps.find((x) => x.id === id)
+    return `<option value="${id}">${nameOf(m)}</option>`
+  }).join('')
+  $('mapSelect').addEventListener('change', (e) => select(e.target.value))
+  document.querySelectorAll('#layers button').forEach((b) => b.addEventListener('click', () => {
+    b.classList.toggle('active')
+    b.classList.contains('active') ? layers.add(b.dataset.layer) : layers.delete(b.dataset.layer)
+    draw()
+  }))
+  stats()
+  bars()
+  journey(order)
+  select(D.hallStart.map)
+}
+
+/** Walk the real exit graph from the starting bedroom; branches (the gym) come after their area. */
+function journeyOrder() {
+  const adj = {}
+  D.edges.forEach((e) => { (adj[e.a] ||= []).push(e.b); (adj[e.b] ||= []).push(e.a) })
+  const seen = new Set(), out = []
+  const visit = (id) => {
+    seen.add(id); out.push(id)
+    // continue along the main road first (the neighbour with more exits), side rooms last
+    const next = (adj[id] || []).filter((n) => !seen.has(n)).sort((a, b) => (adj[b].length - adj[a].length))
+    next.forEach((n) => { if (!seen.has(n)) visit(n) })
+  }
+  visit('bedroom')
+  return out
+}
+
+function stats() {
+  const engineLines = D.code.filter((c) => c.file.startsWith('src/engine')).reduce((s, c) => s + c.lines, 0)
+  const allLines = D.code.reduce((s, c) => s + c.lines, 0)
+  const tiles = D.maps.reduce((s, m) => s + m.width * m.height, 0)
+  const placed = D.maps.reduce((s, m) => s + m.props.length, 0)
+  const tiles6 = [
+    [D.maps.length, 'Areas', 'Separate maps, each its own data file in src/maps/.'],
+    [D.propKinds.length, 'Object types', 'Prop builders in src/engine/props.ts: each one builds a building or object from simple 3D shapes.'],
+    [D.terrainChars.length, 'Ground types', 'Ground letters the terrain painter in src/engine/ground.ts knows how to draw.'],
+    [engineLines.toLocaleString(), 'Engine lines', 'Lines of TypeScript in src/engine/ (rendering, movement, camera, battles, procedural art).'],
+    [tiles.toLocaleString(), 'Squares of map', 'Total tiles across all areas.'],
+    [BUNDLE_KB + ' KB', 'Game download', 'Size of the game code after gzip compression, measured from the production build.'],
+  ]
+  $('stats').innerHTML = tiles6.map(([v, l, t]) => `<div class="stat-tile" title="${t}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')
+  const chips = [
+    ['3D model files', '0', 'No .glb/.obj models: every object is generated in code.'],
+    ['Objects placed', placed, 'Prop instances across all areas.'],
+    ['All source lines', allLines.toLocaleString(), 'Engine, maps, interface and state, in TypeScript.'],
+    ['Traced', D.generatedAt, 'Date this data was traced from the source with tools/trace_world.ts.'],
+  ]
+  $('chips').innerHTML = chips.map(([k, v, t]) => `<div class="chip" title="${t}"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')
+}
+
+function bars() {
+  const groups = [['src/engine', 'Engine'], ['src/maps', 'Areas (map data)'], ['src/ui', 'Interface (React)'], ['src/systems', 'Game state (Zustand)']]
+  const max = Math.max(...D.code.map((c) => c.lines))
+  $('bars').innerHTML = groups.map(([dir, label]) => {
+    const files = D.code.filter((c) => c.file.startsWith(dir + '/')).sort((a, b) => b.lines - a.lines)
+    const total = files.reduce((s, c) => s + c.lines, 0)
+    return `<div class="grp label">${label}: ${total.toLocaleString()} lines</div>` + files.map((c) =>
+      `<span class="f" title="${c.file}">${c.file.replace(dir + '/', '')}</span><div class="b" style="width:${(c.lines / max) * 100}%"></div><span class="n">${c.lines}</span>`).join('')
+  }).join('')
+}
+
+function journey(order) {
+  const svg = $('journey')
+  const w = svg.clientWidth || 1200, h = 176
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`)
+  const main = order.filter((id) => id !== 'turnersGym')
+  const pos = {}
+  const pad = 46, step = (w - pad * 2) / (main.length - 1)
+  main.forEach((id, i) => { pos[id] = { x: pad + i * step, y: 112 + (i % 2 ? -18 : 18), up: i % 2 === 1 } })
+  if (pos.turners) pos.turnersGym = { x: pos.turners.x + step * 0.5, y: 40, up: true, side: true }
+  let s = ''
+  D.edges.forEach((e) => { const a = pos[e.a], b = pos[e.b]; if (a && b) s += `<line class="edge" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>` })
+  order.forEach((id) => {
+    const m = D.maps.find((x) => x.id === id), p = pos[id], n = main.indexOf(id)
+    // the name sits above raised nodes and below lowered ones; a legendary's tag takes the other side
+    const tag = m.legendary ? `<text class="tag" y="${p.up ? 30 : -20}">${m.legendary.id === 'lake' ? 'Latias' : 'Lugia'}</text>` : ''
+    s += `<g class="node" data-id="${id}" transform="translate(${p.x},${p.y})" tabindex="0" role="button" aria-label="${nameOf(m)}">
+      <title>${nameOf(m)}: ${m.width} by ${m.height} squares, ${m.props.length} objects</title>
+      <circle r="13"/><text class="num" y="4">${n >= 0 ? n + 1 : '+'}</text>${tag}
+      <text ${p.side ? 'x="20" y="4" style="text-anchor:start"' : `y="${p.up ? -20 : 30}"`}>${nameOf(m)}</text></g>`
+  })
+  svg.innerHTML = s
+  svg.querySelectorAll('.node').forEach((g) => {
+    g.addEventListener('click', () => select(g.dataset.id))
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') select(g.dataset.id) })
+  })
+}
+
+function select(id) {
+  cur = D.maps.find((m) => m.id === id)
+  pinned = null; hover = null
+  $('mapSelect').value = id
+  document.querySelectorAll('#journey .node').forEach((g) => g.classList.toggle('active', g.dataset.id === id))
+  $('mapTitle').textContent = nameOf(cur)
+  const walk = cur.solid.join('').split('').filter((c) => c === '0').length
+  $('mapSub').textContent = `${cur.width} × ${cur.height} squares, ${walk} walkable, ${cur.props.length} objects, ${cur.kind === 'indoor' ? 'indoor' : cur.city ? 'city street' : 'outdoor'}`
+  draw()
+  inspect(null)
+}
+
+let T = 16
+function draw() {
+  const m = cur, cv = $('map'), stage = cv.parentElement
+  const maxW = stage.clientWidth - 20, maxH = 620
+  T = Math.max(8, Math.min(26, Math.floor(Math.min(maxW / m.width, maxH / m.height))))
+  const dpr = window.devicePixelRatio || 1
+  cv.width = m.width * T * dpr; cv.height = m.height * T * dpr
+  cv.style.width = m.width * T + 'px'; cv.style.height = m.height * T + 'px'
+  const g = cv.getContext('2d')
+  g.setTransform(dpr, 0, 0, dpr, 0, 0)
+  g.imageSmoothingEnabled = false
+  g.clearRect(0, 0, m.width * T, m.height * T)
+  for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) {
+    const ch = m.ground[y][x]
+    if (layers.has('terrain')) {
+      if (ch === 'W') { g.fillStyle = '#4f9dc4'; g.fillRect(x * T, y * T, T, T) }
+      else if (ch === ' ') { g.fillStyle = '#05070b'; g.fillRect(x * T, y * T, T, T) }
+      const im = swatch[ch]
+      if (im && im.complete && im.naturalWidth) g.drawImage(im, (x % 4) * 16, (y % 4) * 16, 16, 16, x * T, y * T, T, T)
+    } else {
+      g.fillStyle = (x + y) % 2 ? css('--surface-card') : css('--surface-sunken'); g.fillRect(x * T, y * T, T, T)
+    }
+  }
+  if (layers.has('solid')) {
+    g.save(); g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 1
+    for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) if (m.solid[y][x] === '1') {
+      g.save(); g.beginPath(); g.rect(x * T, y * T, T, T); g.clip()
+      for (let k = -T; k < T; k += 4) { g.beginPath(); g.moveTo(x * T + k, y * T + T); g.lineTo(x * T + k + T, y * T); g.stroke() }
+      g.restore()
+    }
+    g.restore()
+  }
+  if (layers.has('props')) {
+    m.props.forEach((p, i) => {
+      g.strokeStyle = css('--text-primary'); g.globalAlpha = 0.75; g.lineWidth = 1.5
+      g.setLineDash(p.solid ? [] : [3, 3])
+      g.strokeRect(p.x * T + 1, p.y * T + 1, p.w * T - 2, p.d * T - 2)
+      g.globalAlpha = 1; g.setLineDash([])
+    })
+  }
+  if (layers.has('triggers')) {
+    g.strokeStyle = css('--purple'); g.lineWidth = 2; g.setLineDash([4, 3])
+    m.triggers.forEach((t) => g.strokeRect(t.x * T + 2, t.y * T + 2, t.w * T - 4, t.h * T - 4))
+    g.setLineDash([])
+  }
+  if (layers.has('warps')) {
+    g.fillStyle = css('--accent')
+    m.warps.forEach((w) => {
+      const x = Math.min(Math.max(w.x, 0), m.width - 1), y = Math.min(Math.max(w.y, 0), m.height - 1)
+      g.globalAlpha = 0.85; g.fillRect(x * T + T * 0.2, y * T + T * 0.2, T * 0.6, T * 0.6); g.globalAlpha = 1
+    })
+  }
+  const sel = pinned || hover
+  if (sel) {
+    const p = propAt(sel.x, sel.y)
+    g.strokeStyle = css('--path-gold'); g.lineWidth = 2.5
+    if (p) g.strokeRect(p.x * T, p.y * T, p.w * T, p.d * T)
+    g.strokeRect(sel.x * T, sel.y * T, T, T)
+  }
+}
+
+const propAt = (x, y) => cur.props.find((p) => x >= p.x && x < p.x + p.w && y >= p.y && y < p.y + p.d)
+const warpAt = (x, y) => cur.warps.find((w) => Math.min(Math.max(w.x, 0), cur.width - 1) === x && Math.min(Math.max(w.y, 0), cur.height - 1) === y)
+const trigAt = (x, y) => cur.triggers.find((t) => x >= t.x && x < t.x + t.w && y >= t.y && y < t.y + t.h)
+const areaAt = (x, y) => cur.areas.find((a) => x >= a.x && x < a.x + a.w && y >= a.y && y < a.y + a.h)
+const pretty = (k) => k.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase())
+
+function inspect(t) {
+  const el = $('inspector')
+  if (!t) {
+    el.innerHTML = `<div class="label">Inspector</div><p class="empty">Hover any square to see what the game knows about it: its ground letter,
+      whether you can walk there and why, and the object built on it. Click a square to pin it.</p>
+      <div class="prop-card"><div class="label">This area's ground grid, row 1</div><div class="rowstrip">${esc(cur.ground[0])}</div>
+      <div class="meta">Each letter is one square. This is the actual text in the map file; the engine paints it into the ground.</div></div>`
+    return
+  }
+  const { x, y } = t, ch = cur.ground[y][x], [tn, td] = TERRAIN[ch] || ['Unknown', '']
+  const p = propAt(x, y), w = warpAt(x, y), tr = trigAt(x, y), ar = areaAt(x, y)
+  const blocked = cur.solid[y][x] === '1'
+  const why = !blocked ? 'You can walk here.' : p && p.solid ? `Blocked by the ${pretty(p.kind).toLowerCase()} built on it.` : `Blocked: the ground here is ${tn.toLowerCase()}.`
+  const row = cur.ground[y], s0 = Math.max(0, x - 18), s1 = Math.min(row.length, x + 19)
+  const strip = esc(row.slice(s0, x)) + '<b>' + esc(ch === ' ' ? '␣' : ch) + '</b>' + esc(row.slice(x + 1, s1))
+  const pk = p && D.propKinds.find((k) => k.kind === p.kind)
+  const dest = w && D.maps.find((m) => m.id === w.to)
+  el.innerHTML = `
+    <div class="label">Square (${x}, ${y})${pinned ? ' (pinned)' : ''}</div>
+    <div class="insp-row"><span class="k">Ground</span><span><img class="terrain-sw" src="terrain/${ch.charCodeAt(0)}.png" alt="">${tn}
+      <span class="mono" style="color:var(--text-muted)">'${ch === ' ' ? '␣' : esc(ch)}'</span></span></div>
+    <div class="insp-row"><span class="k">Walkable</span><span class="status ${blocked ? 'no' : 'ok'}">${blocked ? '✕ No' : '✓ Yes'}</span></div>
+    <div class="insp-row"><span class="k">Why</span><span>${why}</span></div>
+    ${ar ? `<div class="insp-row"><span class="k">Place</span><span>${esc(ar.name)}</span></div>` : ''}
+    ${w ? `<div class="insp-row"><span class="k">Exit</span><span>Leads to <b>${dest ? esc(nameOf(dest)) : w.to}</b></span></div>` : ''}
+    ${tr ? `<div class="insp-row"><span class="k">Walk-up</span><span style="color:var(--purple)">Stepping here opens an exhibit</span></div>` : ''}
+    <div><div class="label" style="margin-bottom:4px">Row ${y + 1} of the ground grid</div><div class="rowstrip">${strip}</div></div>
+    ${p ? `<div class="prop-card">
+      <img src="${thumbs[p.kind]}" alt="${pretty(p.kind)} rendered by the engine">
+      <div class="name">${p.kind}</div>
+      <div class="meta">${pretty(p.kind)}, rendered by the game's own code. Built by <span class="mono">${pk ? pk.builder : '?'}()</span>${pk && pk.lines ? ` in ${pk.lines} lines` : ''}
+      from boxes, cylinders and textures painted at runtime. Footprint ${p.w} × ${p.d} squares${p.solid ? '' : ', walk-through'}.</div></div>` : ''}`
+}
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+
+const tileOf = (e) => { const r = $('map').getBoundingClientRect(); return { x: Math.floor((e.clientX - r.left) / T), y: Math.floor((e.clientY - r.top) / T) } }
+$('map').addEventListener('mousemove', (e) => {
+  const t = tileOf(e)
+  if (t.x < 0 || t.y < 0 || t.x >= cur.width || t.y >= cur.height) return
+  if (hover && hover.x === t.x && hover.y === t.y) return
+  hover = t
+  if (!pinned) inspect(t)
+  draw()
+})
+$('map').addEventListener('mouseleave', () => { hover = null; if (!pinned) inspect(null); draw() })
+$('map').addEventListener('click', (e) => {
+  const t = tileOf(e)
+  pinned = pinned && pinned.x === t.x && pinned.y === t.y ? null : t
+  inspect(pinned || t); draw()
+})
+window.addEventListener('resize', () => { if (cur) { journey(journeyOrder()); select(cur.id) } })
+$('themeBtn').addEventListener('click', () => {
+  const r = document.documentElement
+  const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+  r.dataset.theme = dark ? 'light' : 'dark'
+  if (cur) { draw() }
+})
+load().catch((e) => {
+  $('loadingLabel').textContent = 'The map data could not be loaded. Try refreshing the page. (' + e.message + ')'
+})
+</script>
+</body>
+</html>

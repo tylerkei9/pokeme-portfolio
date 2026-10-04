@@ -1,0 +1,70 @@
+<!doctype html>
+<!--
+  Render harness for the "How I built this" dashboard (public/pokeme-engine/).
+  With `npm run dev` running, open /tools/prop-thumbs.html: it builds every prop kind with the
+  real engine (engine/props.ts → buildProp) and paints every terrain character with the real
+  ground painter (engine/ground.ts), then exposes the images as data URLs on
+  window.__thumbs for a headless browser to save. Not part of the built site.
+-->
+<html>
+<head><meta charset="utf-8"><title>prop thumbnails</title></head>
+<body style="background:#222;margin:0">
+<script type="module">
+import * as THREE from 'three'
+import { buildProp } from '/src/engine/props.ts'
+import { loadAssets } from '/src/engine/assets.ts'
+import { paintGround } from '/src/engine/ground.ts'
+import { MAPS } from '/src/maps/index.ts'
+
+const data = await (await fetch('/pokeme-engine/data.json')).json()
+const assets = await loadAssets()
+
+// first real instance of each kind (with its real opts), so buildings look as they do in game
+const firstUse = {}
+for (const def of Object.values(MAPS)) for (const p of def.props) if (!firstUse[p.kind]) firstUse[p.kind] = { ...p, x: 0, y: 0 }
+
+const W = 240, H = 180
+const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, preserveDrawingBuffer: true })
+renderer.setSize(W, H)
+renderer.outputColorSpace = THREE.SRGBColorSpace
+document.body.appendChild(renderer.domElement)
+
+const props = {}
+for (const { kind } of data.propKinds) {
+  try {
+    const p = firstUse[kind] ?? { kind, x: 0, y: 0 }
+    const scene = new THREE.Scene()
+    scene.add(new THREE.AmbientLight(0xffffff, 2.3))
+    const sun = new THREE.DirectionalLight(0xffffff, 1.6)
+    sun.position.set(-4, 10, 7)
+    scene.add(sun)
+    const obj = buildProp(p, assets)
+    scene.add(obj)
+    obj.updateMatrixWorld(true)
+    const box = new THREE.Box3().setFromObject(obj)
+    const sphere = box.getBoundingSphere(new THREE.Sphere())
+    const cam = new THREE.PerspectiveCamera(34, W / H, 0.1, 500)
+    const pitch = THREE.MathUtils.degToRad(40)
+    const dist = Math.max(1.5, sphere.radius) / Math.sin(THREE.MathUtils.degToRad(17)) * 0.95
+    cam.position.set(sphere.center.x, sphere.center.y + Math.sin(pitch) * dist, sphere.center.z + Math.cos(pitch) * dist)
+    cam.lookAt(sphere.center)
+    renderer.setClearColor(0x000000, 0)
+    renderer.render(scene, cam)
+    props[kind] = renderer.domElement.toDataURL('image/png')
+  } catch (e) {
+    props[kind] = null
+    console.warn('failed', kind, e)
+  }
+}
+
+// one 4×4-tile swatch per terrain character, painted by the real ground painter
+const terrain = {}
+for (const ch of data.terrainChars) {
+  const def = { width: 4, height: 4, ground: Array(4).fill(ch.repeat(4)), props: [], warps: [], interactions: [], kind: 'outdoor', id: 'swatch', name: '' }
+  const c = paintGround(def)
+  terrain[ch] = c.toDataURL('image/png')
+}
+window.__thumbs = { props, terrain }
+</script>
+</body>
+</html>
