@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: 'Press Start 2P', monospace;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+#game-container {
+  width: 100%;
+  height: 100%;
+}
+
+#game-container canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* About Me intro screen — Trainer HUD palette (navy panels, yellow accent) */
+@keyframes about-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.about-in { animation: about-in 500ms ease-out both; }
+
+/* Staggered entrance; each element sets its own animation-delay inline. */
+@keyframes about-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.about-rise { animation: about-rise 650ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+.about-bg {
+  --px: 0;
+  --py: 0;
+  background-color: #0b1c2e;
+  background-image:
+    radial-gradient(rgba(143, 176, 216, 0.10) 1px, transparent 1px),
+    linear-gradient(180deg, #16324f 0%, #0b1c2e 100%);
+  background-size: 12px 12px, auto;
+}
+
+/* Spotlight behind the portrait; drifts opposite the portrait for depth. */
+.about-glow {
+  background: radial-gradient(ellipse at 72% 50%, rgba(44, 90, 134, 0.55), transparent 60%);
+  transform: translate3d(calc(var(--px) * 18px), calc(var(--py) * 12px), 0);
+  transition: transform 400ms ease-out;
+}
+
+/* Portrait: a solid, fully opaque cutout with a soft shadow so it stands off the panel.
+   No edge fades; the bottom of the photo runs past the window instead. */
+.about-portrait {
+  filter: grayscale(1) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
+  transform: translate3d(calc(var(--px) * -10px), calc(var(--py) * -6px), 0);
+  transition: transform 400ms ease-out;
+}
+
+/* Blinking selection cursor and bobbing "more text" arrow, as on in-game menus. */
+@keyframes about-blink { 50% { opacity: 0; } }
+.about-cursor { animation: about-blink 1s steps(1) infinite; }
+
+@keyframes about-bob { 50% { transform: translateY(2px); } }
+.about-bob { display: inline-block; animation: about-bob 700ms steps(2) infinite; }
+
+/* The Begin button calls for attention once the last page has been read. */
+@keyframes about-ready {
+  0%, 100% { box-shadow: 0 3px 0 #000, 0 0 0 0 rgba(255, 0, 0, 0.45); }
+  50%      { box-shadow: 0 3px 0 #000, 0 0 0 8px rgba(255, 0, 0, 0); }
+}
+.about-ready { animation: about-ready 1.6s ease-out infinite; }
+
+/* Name: a 2px pixel outline plus a drop so it holds up on the red gradient. */
+.about-name {
+  text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 0 5px 0 #000;
+}
+
+/* Lower (white) half: faint pixel dither and a soft vignette instead of a flat fill. */
+.about-lower {
+  background-color: #dcdcdc;
+  background-image:
+    radial-gradient(rgba(0, 0, 0, 0.07) 1px, transparent 1px),
+    radial-gradient(ellipse at 30% 0%, transparent 45%, rgba(0, 0, 0, 0.10) 100%),
+    linear-gradient(180deg, #ffffff 0%, #dcdcdc 100%);
+  background-size: 6px 6px, 100% 100%, 100% 100%;
+}
+
+/* About photo strip (motion is driven from AboutScreen: auto drift + trackpad scrolling). */
+.about-strip {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+}
+.about-strip img { image-rendering: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .about-in, .about-rise, .about-cursor, .about-bob, .about-ready { animation: none; }
+  .about-glow, .about-portrait { transform: none; transition: none; }
+}
+

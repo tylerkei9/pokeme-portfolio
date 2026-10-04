@@ -1,0 +1,213 @@
+[
+  {
+    "id": "about",
+    "type": "resume",
+    "title": "About Tyler",
+    "description": "Welcome home! This is where it all started.",
+    "route": "town",
+    "data": {
+      "sections": [
+        {
+          "heading": "Origin",
+          "items": [
+            "Grew up in New Hyde Park, NY"
+          ]
+        },
+        {
+          "heading": "Interests",
+          "items": [
+            "Software Engineering",
+            "Volleyball",
+            "Photography",
+            "Music"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "education",
+    "type": "resume",
+    "title": "Education",
+    "description": "New Hyde Park Memorial High School — where it began.",
+    "route": "town",
+    "data": {
+      "sections": [
+        {
+          "heading": "Elementary School",
+          "items": [
+            "Hillside Grade School, New Hyde Park, NY"
+          ]
+        },
+        {
+          "heading": "High School",
+          "items": [
+            "New Hyde Park Memorial High School, NY"
+          ]
+        },
+        {
+          "heading": "University",
+          "items": [
+            "Purdue University — B.S. Computer Science, B.S. Applied Statistics (Aug. 2022 – May 2026)"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "resume",
+    "type": "resume",
+    "title": "Résumé",
+    "description": "Tyler Kei — Computer Science & Applied Statistics, Purdue University.",
+    "route": "route-1",
+    "data": {
+      "sections": [
+        {
+          "heading": "Education",
+          "title": "Purdue University",
+          "subtitle": "B.S. in Computer Science, B.S. in Applied Statistics",
+          "dates": "Aug. 2022 – May 2026",
+          "location": "West Lafayette, IN",
+          "items": [
+            "Relevant Coursework: Data Structures & Algorithms, Large-Scale Data Analytics, Data Mining & Machine Learning, Applied Regression Analysis, Data Science Capstone, Human-Computer Interaction"
+          ]
+        },
+        {
+          "heading": "Eli Lilly",
+          "title": "Artificial Intelligence Fellow",
+          "subtitle": "Eli Lilly – M&Q",
+          "dates": "May 2026 – Present",
+          "items": [
+            "Built an agent observability layer in Databricks and a custom ticketing application, monitoring 2 productionized agents, logging 100+ incidents, and supporting 10 developers who maintain them, by calculating agentic evaluation metrics and flagging irregular behavior",
+            "Retired legacy systems by migrating 25 agents and 86 connections into an intelligent, self-formatting graph dashboard that tracks the live status of productionized agents along with their associated data connections",
+            "Built a 3,000 node SharePoint knowledge base using Claude skills and graphify semantic linking, connected via a Microsoft connector to reduce search times and surface deeper insights, then reused those skills to deliver a self-healing FAQ assistant giving 5+ project managers accessibility to current project status"
+          ]
+        },
+        {
+          "heading": "Purdue Autonomous Robotics",
+          "title": "Algorithms Team Lead",
+          "subtitle": "Purdue Autonomous Robotics Club",
+          "dates": "Aug. 2025 – Present",
+          "location": "West Lafayette, IN",
+          "items": [
+            "Led 4 person algorithms team, coordinating weekly integration with mechanical and electrical subteams on servo timing and actuation constraints",
+            "Designed a Viterbi based motion planner converting structured input to motor commands, using lookahead logic to prevent unreachable configurations that failed 15% of passages",
+            "Built a multifactor verification pipeline catching constraint violations before hardware execution",
+            "Implemented split point optimization over 50 candidates, reducing hand movement by 35% versus static assignment"
+          ]
+        },
+        {
+          "heading": "Rolls-Royce × Data Mine",
+          "title": "Undergraduate Data Science Researcher – Rolls-Royce",
+          "subtitle": "Purdue Data Mine",
+          "dates": "Jan. 2025 – May 2025",
+          "location": "West Lafayette, IN",
+          "items": [
+            "Refactored a transformer ML pipeline, externalizing 15+ hyperparameters into YAML configs with 6 CLI flags for single command reproducible execution",
+            "Built an auto-checkpointing system persisting model weights, optimizer state, and scheduler every 5 epochs, enabling seamless training resumption after interruptions",
+            "Designed a Streamlit frontend with a custom CSS design system wiring 3 backend ML modules to UI controls, supporting reactive data manipulation across interactive visualizations"
+          ]
+        },
+        {
+          "heading": "Skills",
+          "items": [
+            "Languages: Python, Java, JavaScript, SQL, R, HTML/CSS, Bash",
+            "Developer Tools: Azure, Databricks, AWS, Git/GitHub, Docker, Power BI, ETL Pipelines, YAML Configuration, LLM Agents",
+            "Libraries: React, PyTorch, Pandas, Streamlit, Scikit-Learn, PySpark, XGBoost, NumPy, SHAP, Matplotlib"
+          ]
+        },
+        {
+          "heading": "Certifications",
+          "items": [
+            "Microsoft Fabric Analytics Engineer (DP-600)",
+            "Azure Fundamentals (AZ-900)",
+            "AWS Cloud Practitioner"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "projects",
+    "type": "projects",
+    "title": "Projects",
+    "description": "Links to Tyler's featured projects with visualizations.",
+    "route": "route-2",
+    "data": {
+      "projects": [
+        {
+          "name": "PokeMe",
+          "subtitle": "This portfolio website",
+          "description": "A playable portfolio built as a love letter to Pokémon Black & White's 3D overworld. Walk from New Hyde Park through Oakland Gardens, over the Throgs Neck crossing to American Turners, battle two legendaries, and step through a portal into this Hall of Fame — every stop tied to a piece of Tyler's story.",
+          "items": [
+            "Engineered a custom 3D tile-map game engine in Three.js and TypeScript (~6,300 lines) rendering 12 interconnected maps, using instanced meshes and billboarded sprites with per-map camera and lighting to keep draw calls low in the browser",
+            "Built a procedural pixel-art rendering pipeline generating 23 terrain types and 38 prop models on canvas at runtime, removing the need for any external 3D models or world textures",
+            "Designed a content-driven architecture that sources all portfolio content (résumé, projects, media) from a single JSON file to auto-generate interactive exhibits, and layered scripted cutscenes, battle sequences and a React/Zustand UI over the game canvas"
+          ],
+          "url": "#",
+          "tags": [
+            "Three.js",
+            "TypeScript",
+            "React",
+            "Zustand",
+            "Vite",
+            "Tailwind"
+          ]
+        },
+        {
+          "name": "Piano Hand Algorithms",
+          "subtitle": "Viterbi hand-position optimizer for a robotic pianist",
+          "description": "A dynamic-programming (Viterbi) optimizer that decides how a robotic hand should move across a piano keyboard to play a song, balancing reach, speed, and fingering comfort against hardware constraints. The interactive dashboard shows every candidate hand position the optimizer considered, which one it kept and why, with synced piano-roll playback.",
+          "items": [
+            "Built a Viterbi optimizer in Python that parses MusicXML scores with music21, splits notes between hands, and finds the lowest-cost sequence of hand positions under reach, speed, and fingering penalties",
+            "Visualized the full search trellis for 61 songs, including scale runs, arpeggios, trills, and leap studies, in a single-page dashboard with synced audio playback",
+            "Modeled a right-hand-only hardware failure scenario to compare how the optimizer adapts when one hand is unavailable"
+          ],
+          "url": "/piano-hand-project/index.html",
+          "tags": [
+            "Python",
+            "Dynamic Programming",
+            "music21",
+            "JavaScript",
+            "Data Visualization"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "contact",
+    "type": "contact",
+    "title": "Contact",
+    "description": "Get in touch with Tyler.",
+    "route": "sandbox",
+    "data": {
+      "email": "tkei1404@gmail.com",
+      "github": "https://github.com/tylerkei9",
+      "linkedin": "https://www.linkedin.com/in/tyler-kei"
+    }
+  },
+  {
+    "id": "highlights",
+    "type": "video",
+    "title": "Highlights",
+    "description": "Tyler's old volleyball highlights.",
+    "route": "turnersGym",
+    "data": {
+      "clips": [
+        {
+          "src": "/videos/highlight1.mp4",
+          "caption": "Highlight reel"
+        },
+        {
+          "src": "/videos/highlight2.mp4",
+          "caption": "Highlight"
+        },
+        {
+          "src": "/videos/highlight3.mp4",
+          "caption": "Highlight"
+        }
+      ]
+    }
+  }
+]

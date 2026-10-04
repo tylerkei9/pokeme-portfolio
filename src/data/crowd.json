@@ -1,0 +1,773 @@
+{
+  "_comment": "Wandering trainers and Pokémon. `cell` is the sprite's top-left in its ripped BW sheet (NPCs: 32px grid of assets-src/bw_overworld_entities.png; Pokémon: 64x128 cells of assets-src/bw_oldgen_overworld_pokemon.png). NPC `layout`: \"2col\" (stand+step columns; rows up/down/left, extra left step below) or \"3x4\" (3 frames x rows up/down/left/right). Rebuild sprites with: python3 tools/build_crowd.py",
+  "npcs": [
+    {
+      "id": "youngster",
+      "cell": [
+        3,
+        0
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "kidgirl",
+      "cell": [
+        5,
+        0
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "boy",
+      "cell": [
+        7,
+        0
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "capboy",
+      "cell": [
+        9,
+        0
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "blondboy",
+      "cell": [
+        11,
+        0
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "lass",
+      "cell": [
+        18,
+        0
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "pigtails",
+      "cell": [
+        20,
+        0
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "darkhair",
+      "cell": [
+        3,
+        5
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "blonde",
+      "cell": [
+        5,
+        5
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "ponytail",
+      "cell": [
+        7,
+        5
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "oldman",
+      "cell": [
+        11,
+        5
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "brunette",
+      "cell": [
+        13,
+        5
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "backpacker",
+      "cell": [
+        15,
+        5
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "twintails",
+      "cell": [
+        23,
+        5
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "suit",
+      "cell": [
+        16,
+        9
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "grandpa",
+      "cell": [
+        0,
+        17
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "grandma",
+      "cell": [
+        22,
+        9
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "curlyhair",
+      "cell": [
+        27,
+        21
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "mom",
+      "cell": [
+        0,
+        26
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "blondekid",
+      "cell": [
+        3,
+        26
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "explorer",
+      "cell": [
+        6,
+        26
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "redhead",
+      "cell": [
+        9,
+        26
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "surfer",
+      "cell": [
+        24,
+        26
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "nurse",
+      "cell": [
+        3,
+        30
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "blackbelt",
+      "cell": [
+        25,
+        9
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "builder",
+      "cell": [
+        13,
+        13
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "captain",
+      "cell": [
+        29,
+        30
+      ],
+      "layout": "3x4"
+    },
+    {
+      "id": "hiker",
+      "cell": [
+        5,
+        17
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "trekker",
+      "cell": [
+        7,
+        17
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "granny",
+      "cell": [
+        9,
+        17
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "chef",
+      "cell": [
+        11,
+        17
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "worker",
+      "cell": [
+        13,
+        17
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "ranger",
+      "cell": [
+        15,
+        17
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "dad",
+      "cell": [
+        12,
+        30
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "jogger",
+      "cell": [
+        21,
+        30
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "artist",
+      "cell": [
+        23,
+        30
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "hikergirl",
+      "cell": [
+        0,
+        9
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "kid",
+      "cell": [
+        16,
+        13
+      ],
+      "layout": "2col"
+    },
+    {
+      "id": "lady",
+      "cell": [
+        28,
+        9
+      ],
+      "layout": "2col"
+    }
+  ],
+  "pokemon": [
+    {
+      "id": "bulbasaur",
+      "name": "Bulbasaur",
+      "cell": [
+        0,
+        0
+      ],
+      "cry": "Bulba!",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "charmander",
+      "name": "Charmander",
+      "cell": [
+        4,
+        0
+      ],
+      "cry": "Char char!",
+      "habitat": [
+        "grass",
+        "path"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "squirtle",
+      "name": "Squirtle",
+      "cell": [
+        7,
+        0
+      ],
+      "cry": "Squirtle!",
+      "habitat": [
+        "shore"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "caterpie",
+      "name": "Caterpie",
+      "cell": [
+        10,
+        0
+      ],
+      "cry": "...Cater?",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 3
+    },
+    {
+      "id": "butterfree",
+      "name": "Butterfree",
+      "cell": [
+        12,
+        0
+      ],
+      "cry": "Free! Free!",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "pidgey",
+      "name": "Pidgey",
+      "cell": [
+        0,
+        1
+      ],
+      "cry": "Pidge!",
+      "habitat": [
+        "grass",
+        "path"
+      ],
+      "weight": 5
+    },
+    {
+      "id": "rattata",
+      "name": "Rattata",
+      "cell": [
+        3,
+        1
+      ],
+      "cry": "Rattata!",
+      "habitat": [
+        "grass",
+        "path"
+      ],
+      "weight": 4
+    },
+    {
+      "id": "pikachu",
+      "name": "Pikachu",
+      "cell": [
+        9,
+        1
+      ],
+      "cry": "Pika pika!",
+      "habitat": [
+        "grass",
+        "path"
+      ],
+      "weight": 3
+    },
+    {
+      "id": "pichu",
+      "name": "Pichu",
+      "cell": [
+        15,
+        10
+      ],
+      "cry": "Pichu!",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "clefairy",
+      "name": "Clefairy",
+      "cell": [
+        4,
+        2
+      ],
+      "cry": "Clef!",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 1
+    },
+    {
+      "id": "jigglypuff",
+      "name": "Jigglypuff",
+      "cell": [
+        8,
+        2
+      ],
+      "cry": "Jiggly... puff~",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "oddish",
+      "name": "Oddish",
+      "cell": [
+        12,
+        2
+      ],
+      "cry": "Oddish!",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 3
+    },
+    {
+      "id": "vulpix",
+      "name": "Vulpix",
+      "cell": [
+        6,
+        2
+      ],
+      "cry": "Vul!",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "psyduck",
+      "name": "Psyduck",
+      "cell": [
+        7,
+        3
+      ],
+      "cry": "Psy...duck?",
+      "habitat": [
+        "shore"
+      ],
+      "weight": 3
+    },
+    {
+      "id": "poliwag",
+      "name": "Poliwag",
+      "cell": [
+        13,
+        3
+      ],
+      "cry": "Poli!",
+      "habitat": [
+        "shore"
+      ],
+      "weight": 3
+    },
+    {
+      "id": "growlithe",
+      "name": "Growlithe",
+      "cell": [
+        11,
+        3
+      ],
+      "cry": "Grrowl!",
+      "habitat": [
+        "path",
+        "grass"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "abra",
+      "name": "Abra",
+      "cell": [
+        0,
+        4
+      ],
+      "cry": "Abra... zzz",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 1
+    },
+    {
+      "id": "ponyta",
+      "name": "Ponyta",
+      "cell": [
+        14,
+        4
+      ],
+      "cry": "Neighh!",
+      "habitat": [
+        "grass",
+        "path"
+      ],
+      "weight": 1
+    },
+    {
+      "id": "eevee",
+      "name": "Eevee",
+      "cell": [
+        6,
+        8
+      ],
+      "cry": "Vee!",
+      "habitat": [
+        "grass",
+        "path"
+      ],
+      "weight": 2
+    },
+    {
+      "id": "snorlax",
+      "name": "Snorlax",
+      "cell": [
+        0,
+        9
+      ],
+      "cry": "Snorrrr... zzz",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 0.4,
+      "sleeper": true
+    },
+    {
+      "id": "sentret",
+      "name": "Sentret",
+      "cell": [
+        3,
+        10
+      ],
+      "cry": "Sen!",
+      "habitat": [
+        "grass",
+        "path"
+      ],
+      "weight": 3
+    },
+    {
+      "id": "sudowoodo",
+      "name": "Sudowoodo",
+      "cell": [
+        12,
+        11
+      ],
+      "cry": "Sudo! (It's pretending to be a tree.)",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 0.6,
+      "sleeper": true
+    },
+    {
+      "id": "aipom",
+      "name": "Aipom",
+      "cell": [
+        1,
+        12
+      ],
+      "cry": "Aii-pom!",
+      "habitat": [
+        "grass"
+      ],
+      "weight": 2
+    }
+  ],
+  "companions": [
+    "pikachu",
+    "eevee",
+    "charmander",
+    "squirtle",
+    "bulbasaur",
+    "growlithe",
+    "vulpix",
+    "psyduck",
+    "clefairy",
+    "jigglypuff",
+    "pichu",
+    "ponyta"
+  ],
+  "usernames": [
+    "Alex",
+    "Maria",
+    "Kenji",
+    "Aisha",
+    "Diego",
+    "Priya",
+    "Omar",
+    "Sofia",
+    "Jamal",
+    "Mei",
+    "Liam",
+    "Fatima",
+    "Carlos",
+    "Hana",
+    "Kwame",
+    "Elena",
+    "Raj",
+    "Grace",
+    "Mateo",
+    "Yuki",
+    "Tariq",
+    "Nina",
+    "Andre",
+    "Lucia",
+    "Hiro",
+    "Zara",
+    "Samuel",
+    "Ana",
+    "Ibrahim",
+    "Chloe",
+    "Marcus",
+    "Leila",
+    "Javier",
+    "Amara",
+    "Daniel",
+    "Sun",
+    "Ravi",
+    "Isabel",
+    "Malik",
+    "Emma",
+    "Tomas",
+    "Keiko",
+    "Noah",
+    "Layla",
+    "Arjun",
+    "Rosa",
+    "Ethan",
+    "Nadia",
+    "Kofi",
+    "Julia",
+    "Minh",
+    "Olivia",
+    "Hassan",
+    "Sara",
+    "Luca",
+    "Ines",
+    "Tyrone",
+    "Bea",
+    "Pedro",
+    "Aiko",
+    "Frank",
+    "Dolores",
+    "Walter",
+    "Gloria",
+    "Ben",
+    "Lily",
+    "Max",
+    "Ruby"
+  ],
+  "chatter": {
+    "any": [
+      "LF2M for the Lugia raid, anyone? It's in the cave past American Turners.",
+      "gg! Just beat Latias at the lake. Got a Music Player out of it too!",
+      "WTB Master Ball, paying 50k.",
+      "brb, healing my team at home.",
+      "Anyone else think this server's lag is crazy today?",
+      "Trading my Eevee for anything shiny. DM me!",
+      "Heard there's a Hall of Fame at the very end with Tyler's whole resume in it.",
+      "Tip: talk to every sign. Half the lore is on them.",
+      "Hold Shift to run. Took me way too long to figure that out lol.",
+      "Press T for the Trainer Card. It's basically Tyler's resume.",
+      "Grinding levels before the legendaries. Wish me luck.",
+      "Has anyone actually seen a Snorlax around here?",
+      "Just logged in. Where's everyone headed?",
+      "afk, dinner."
+    ],
+    "town": [
+      "New Hyde Park spawn point, as always.",
+      "The basketball court at Memorial Park is the best pickup spot.",
+      "Went to Hillside Grade School way back. Same as Tyler!"
+    ],
+    "route1": [
+      "Did you read the resume monument? Eli Lilly AI Fellow, pretty cool.",
+      "Oakland Gardens has the best trees on this server."
+    ],
+    "lake": [
+      "Walk to the middle of the lake... trust me.",
+      "Cherry blossom season is my favorite event."
+    ],
+    "route2": [
+      "The project signs on this route are worth a read.",
+      "Bridge is up ahead. Great view from the top."
+    ],
+    "bridge": [
+      "Screenshotting this bridge for my wallpaper.",
+      "Don't look down. Seriously."
+    ],
+    "turners": [
+      "Tyler grew up playing volleyball here at American Turners.",
+      "Check the TV in the gym, the highlights are fire."
+    ],
+    "turnersGym": [
+      "Need one more for a 6v6, you in?",
+      "Watch the highlight TV between the courts!",
+      "Jump float serve practice, don't mind me."
+    ],
+    "route3": [
+      "Boiler Up!",
+      "Late for my CS 251 lecture in Lawson, gotta run!",
+      "Meet you at the Bell Tower after class?",
+      "Tyler did his CS degree right here in Lawson.",
+      "The cave past campus gets dark. Lugia's supposedly behind a waterfall.",
+      "Party of four heading into the cave, want in?"
+    ],
+    "hallOfFame": [
+      "Projects on the left, resume on the right. Took me forever to get here!",
+      "The kiosk at the end has his contact info.",
+      "GG everyone. See you on the next server reset."
+    ]
+  }
+}

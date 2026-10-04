@@ -1,0 +1,52 @@
+[
+  {
+    "id": "lake",
+    "displayName": "Latias",
+    "battleName": "Latias",
+    "level": 70,
+    "maxHp": 294,
+    "stage": "lake",
+    "introDialogue": [
+      "The air above the water shimmers...",
+      "A graceful figure descends from the mist!"
+    ],
+    "cry": "Hyuuun!",
+    "finishingMove": "Eruption",
+    "finishingMoveDesc": "Typhlosion's flames lit up the whole grove!",
+    "defeatText": "Latias soared off over the treetops...",
+    "overworld": {
+      "sheet": "latias",
+      "hover": true
+    },
+    "battleSprite": "latias_front",
+    "environment": {
+      "battle": "grass",
+      "description": "A secluded grove with a horseshoe-shaped pond ringed by dense trees, small orange flower clusters dotting the grass, and an open grassy clearing at the center."
+    }
+  },
+  {
+    "id": "seacave",
+    "displayName": "Lugia",
+    "battleName": "Lugia",
+    "level": 80,
+    "maxHp": 350,
+    "stage": "seacave",
+    "introDialogue": [
+      "The waterfall roars louder and louder...",
+      "Something enormous is rising behind the falls!"
+    ],
+    "cry": "Gyaaaooon!",
+    "finishingMove": "Eruption",
+    "finishingMoveDesc": "The sea itself boiled under the volcanic fury!",
+    "defeatText": "Lugia sank back beneath the pool... and a strange light opened where it had been.",
+    "overworld": {
+      "sheet": "lugia",
+      "hover": true
+    },
+    "battleSprite": "lugia_front",
+    "environment": {
+      "battle": "cave",
+      "description": "A circular stone chamber open to a cave ceiling, with a still teal-toned water pool at the center and jagged rock formations ringing the edges."
+    }
+  }
+]

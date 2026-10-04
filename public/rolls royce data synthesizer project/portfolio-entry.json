@@ -1,0 +1,13 @@
+{
+  "name": "Rolls-Royce Data Synthesizer",
+  "subtitle": "Synthetic turbofan sensor data, validated against NASA C-MAPSS FD001",
+  "description": "An interactive dashboard that walks through the full pipeline: import real run-to-failure engine data, train a model, fine-tune it with LoRA, generate synthetic data, and validate it. The fine-tuned diffusion model passes the KS test on 3 of 3 sensors (91% similarity) against real FD001 data. Every run in the demo replays a real recorded training run.",
+  "items": [
+    "Refactored a transformer ML pipeline, externalizing 15+ hyperparameters into YAML configs with 6 CLI flags for single command reproducible execution",
+    "Built an auto-checkpointing system persisting model weights, optimizer state, and scheduler every 5 epochs, enabling seamless training resumption after interruptions",
+    "Designed a Streamlit frontend with a custom CSS design system wiring 3 backend ML modules to UI controls, supporting reactive data manipulation across interactive visualizations"
+  ],
+  "url": "/rolls%20royce%20data%20synthesizer%20project/index.html",
+  "visual": "/rolls%20royce%20data%20synthesizer%20project/preview.png",
+  "tags": ["Python", "PyTorch", "Diffusion", "Transformer", "LoRA", "NASA C-MAPSS"]
+}

@@ -1,0 +1,16 @@
+# dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# OS and editor files
+.DS_Store
+.claude/
+
+# large or personal source files kept only locally
+assets-src/videos/
+assets-src/unused-material/
+assets-src/IMG_*.jpg
+piano-hand-project/
+legacy/
+Pokémon Portfolio — Revised Codex Prompt.md
