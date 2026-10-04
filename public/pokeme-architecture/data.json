@@ -1,0 +1,888 @@
+{
+ "generatedAt": "2026-10-04",
+ "modules": [
+  {
+   "id": "data/content.json",
+   "lines": 214,
+   "bytes": 9162,
+   "imports": [],
+   "externals": [],
+   "exports": []
+  },
+  {
+   "id": "data/crowd.json",
+   "lines": 774,
+   "bytes": 12831,
+   "imports": [],
+   "externals": [],
+   "exports": []
+  },
+  {
+   "id": "data/exhibits.ts",
+   "lines": 52,
+   "bytes": 2202,
+   "imports": [],
+   "externals": [],
+   "exports": [
+    "ProjectFacts",
+    "PROJECT_FACTS",
+    "ExhibitCard",
+    "EXHIBIT_CARDS"
+   ]
+  },
+  {
+   "id": "data/instagramPosts.json",
+   "lines": 71,
+   "bytes": 1404,
+   "imports": [],
+   "externals": [],
+   "exports": []
+  },
+  {
+   "id": "data/legendaries.json",
+   "lines": 53,
+   "bytes": 1635,
+   "imports": [],
+   "externals": [],
+   "exports": []
+  },
+  {
+   "id": "engine/actor.ts",
+   "lines": 186,
+   "bytes": 5757,
+   "imports": [
+    "engine/assets.ts",
+    "maps/types.ts"
+   ],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "DIR_VEC",
+    "OPPOSITE",
+    "Actor"
+   ]
+  },
+  {
+   "id": "engine/assets.ts",
+   "lines": 137,
+   "bytes": 5246,
+   "imports": [
+    "engine/font.ts",
+    "engine/pixel.ts",
+    "maps/types.ts",
+    "data/crowd.json"
+   ],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "SpriteSheet",
+    "AnimSheet",
+    "Assets",
+    "loadImage",
+    "loadAssets"
+   ]
+  },
+  {
+   "id": "engine/battle.ts",
+   "lines": 515,
+   "bytes": 19412,
+   "imports": [
+    "engine/assets.ts",
+    "systems/BattleSystem.ts",
+    "systems/BottomState.ts",
+    "engine/pixel.ts",
+    "engine/hud.ts"
+   ],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "Combatant",
+    "BattleSetup",
+    "Battle"
+   ]
+  },
+  {
+   "id": "engine/crowd.ts",
+   "lines": 299,
+   "bytes": 11397,
+   "imports": [
+    "data/crowd.json",
+    "maps/types.ts",
+    "engine/actor.ts",
+    "engine/assets.ts",
+    "engine/world.ts"
+   ],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "CrowdMember",
+    "Crowd"
+   ]
+  },
+  {
+   "id": "engine/engine.ts",
+   "lines": 871,
+   "bytes": 33731,
+   "imports": [
+    "maps/types.ts",
+    "maps/index.ts",
+    "engine/actor.ts",
+    "engine/assets.ts",
+    "engine/hud.ts",
+    "engine/world.ts",
+    "engine/crowd.ts",
+    "engine/battle.ts",
+    "engine/props.ts",
+    "systems/BattleSystem.ts",
+    "systems/BottomState.ts"
+   ],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "EngineHooks",
+    "ScriptContext",
+    "Engine"
+   ]
+  },
+  {
+   "id": "engine/font.ts",
+   "lines": 112,
+   "bytes": 3587,
+   "imports": [
+    "engine/pixel.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "BitmapFont"
+   ]
+  },
+  {
+   "id": "engine/ground.ts",
+   "lines": 363,
+   "bytes": 14549,
+   "imports": [
+    "maps/types.ts",
+    "engine/pixel.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "TP",
+    "paintGround",
+    "paintBasketballCourt"
+   ]
+  },
+  {
+   "id": "engine/hud.ts",
+   "lines": 301,
+   "bytes": 9748,
+   "imports": [
+    "engine/font.ts",
+    "engine/pixel.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "DS_W",
+    "DS_H",
+    "DialogStyle",
+    "Hud",
+    "roundRect"
+   ]
+  },
+  {
+   "id": "engine/pixel.ts",
+   "lines": 70,
+   "bytes": 2392,
+   "imports": [],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "RGB",
+    "makeCanvas",
+    "pixelTexture",
+    "rng",
+    "css",
+    "shade",
+    "rect",
+    "speckle",
+    "lambert"
+   ]
+  },
+  {
+   "id": "engine/props.ts",
+   "lines": 3186,
+   "bytes": 130360,
+   "imports": [
+    "maps/types.ts",
+    "engine/assets.ts",
+    "engine/pixel.ts"
+   ],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "TREE_PALETTES",
+    "buildTrees",
+    "buildTallGrass",
+    "WaterStyle",
+    "buildWater",
+    "buildCaveWalls",
+    "buildBoulders",
+    "buildPortal",
+    "buildSkyline",
+    "buildProp",
+    "buildWallWindow",
+    "buildSparkle"
+   ]
+  },
+  {
+   "id": "engine/world.ts",
+   "lines": 230,
+   "bytes": 9600,
+   "imports": [
+    "maps/types.ts",
+    "engine/assets.ts",
+    "engine/ground.ts",
+    "engine/pixel.ts",
+    "engine/props.ts"
+   ],
+   "externals": [
+    "three"
+   ],
+   "exports": [
+    "World"
+   ]
+  },
+  {
+   "id": "main.tsx",
+   "lines": 11,
+   "bytes": 239,
+   "imports": [
+    "ui/App.tsx"
+   ],
+   "externals": [
+    "react",
+    "react-dom"
+   ],
+   "exports": []
+  },
+  {
+   "id": "maps/bedroom.ts",
+   "lines": 30,
+   "bytes": 808,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "bedroom"
+   ]
+  },
+  {
+   "id": "maps/bridge.ts",
+   "lines": 50,
+   "bytes": 1677,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "bridge"
+   ]
+  },
+  {
+   "id": "maps/hallOfFame.ts",
+   "lines": 103,
+   "bytes": 4303,
+   "imports": [
+    "engine/engine.ts",
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "hallOfFame"
+   ]
+  },
+  {
+   "id": "maps/house1f.ts",
+   "lines": 36,
+   "bytes": 1068,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "house1f"
+   ]
+  },
+  {
+   "id": "maps/index.ts",
+   "lines": 35,
+   "bytes": 945,
+   "imports": [
+    "maps/types.ts",
+    "maps/bedroom.ts",
+    "maps/house1f.ts",
+    "maps/town.ts",
+    "maps/route1.ts",
+    "maps/lake.ts",
+    "maps/route2.ts",
+    "maps/bridge.ts",
+    "maps/turners.ts",
+    "maps/turnersGym.ts",
+    "maps/route3.ts",
+    "maps/lugiaCave.ts",
+    "maps/hallOfFame.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "MAPS",
+    "START",
+    "HALL_START"
+   ]
+  },
+  {
+   "id": "maps/lake.ts",
+   "lines": 70,
+   "bytes": 2772,
+   "imports": [
+    "maps/types.ts",
+    "engine/pixel.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "lake"
+   ]
+  },
+  {
+   "id": "maps/lugiaCave.ts",
+   "lines": 50,
+   "bytes": 1889,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "lugiaCave"
+   ]
+  },
+  {
+   "id": "maps/route1.ts",
+   "lines": 47,
+   "bytes": 1849,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "route1"
+   ]
+  },
+  {
+   "id": "maps/route2.ts",
+   "lines": 154,
+   "bytes": 6664,
+   "imports": [
+    "engine/pixel.ts",
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "route2"
+   ]
+  },
+  {
+   "id": "maps/route3.ts",
+   "lines": 81,
+   "bytes": 3835,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "route3"
+   ]
+  },
+  {
+   "id": "maps/town.ts",
+   "lines": 75,
+   "bytes": 3071,
+   "imports": [
+    "maps/types.ts",
+    "engine/ground.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "town"
+   ]
+  },
+  {
+   "id": "maps/turners.ts",
+   "lines": 41,
+   "bytes": 1327,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "turners"
+   ]
+  },
+  {
+   "id": "maps/turnersGym.ts",
+   "lines": 62,
+   "bytes": 2080,
+   "imports": [
+    "maps/types.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "turnersGym"
+   ]
+  },
+  {
+   "id": "maps/types.ts",
+   "lines": 140,
+   "bytes": 5811,
+   "imports": [
+    "engine/engine.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "Dir",
+    "GroundChar",
+    "Prop",
+    "Warp",
+    "Interaction",
+    "BumpTrigger",
+    "CameraConfig",
+    "MapDef",
+    "onTiles",
+    "groundGrid"
+   ]
+  },
+  {
+   "id": "systems/BattleSystem.ts",
+   "lines": 43,
+   "bytes": 1161,
+   "imports": [
+    "data/legendaries.json"
+   ],
+   "externals": [],
+   "exports": [
+    "LegendaryId",
+    "BattleEnv",
+    "LegendaryData",
+    "LEGENDARIES",
+    "legendary",
+    "STARTER"
+   ]
+  },
+  {
+   "id": "systems/BottomState.ts",
+   "lines": 42,
+   "bytes": 1172,
+   "imports": [],
+   "externals": [
+    "zustand"
+   ],
+   "exports": [
+    "BottomMode",
+    "MoveSlot",
+    "COMMANDS",
+    "Command",
+    "useBottom"
+   ]
+  },
+  {
+   "id": "systems/DeepLink.ts",
+   "lines": 14,
+   "bytes": 375,
+   "imports": [
+    "systems/GameState.ts"
+   ],
+   "externals": [],
+   "exports": [
+    "handleDeepLink"
+   ]
+  },
+  {
+   "id": "systems/GameState.ts",
+   "lines": 92,
+   "bytes": 3086,
+   "imports": [],
+   "externals": [
+    "zustand"
+   ],
+   "exports": [
+    "GameStateData",
+    "GameStateActions",
+    "useGameState"
+   ]
+  },
+  {
+   "id": "ui/AboutScreen.tsx",
+   "lines": 385,
+   "bytes": 17812,
+   "imports": [
+    "data/content.json"
+   ],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "AboutScreen"
+   ]
+  },
+  {
+   "id": "ui/App.tsx",
+   "lines": 192,
+   "bytes": 7721,
+   "imports": [
+    "engine/engine.ts",
+    "maps/index.ts",
+    "systems/GameState.ts",
+    "systems/BottomState.ts",
+    "systems/DeepLink.ts",
+    "ui/AboutScreen.tsx",
+    "ui/ContentModal.tsx",
+    "ui/PhoneOverlay.tsx",
+    "ui/HudTray.tsx",
+    "ui/BattleBar.tsx",
+    "ui/SpotifyPlayer.tsx",
+    "ui/ResumeViewer.tsx"
+   ],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "App"
+   ]
+  },
+  {
+   "id": "ui/BattleBar.tsx",
+   "lines": 136,
+   "bytes": 5355,
+   "imports": [
+    "engine/font.ts",
+    "engine/hud.ts",
+    "engine/pixel.ts",
+    "systems/BottomState.ts"
+   ],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "BATTLE_BAR_H",
+    "BattleBar"
+   ]
+  },
+  {
+   "id": "ui/ContentModal.tsx",
+   "lines": 385,
+   "bytes": 15265,
+   "imports": [
+    "systems/GameState.ts",
+    "data/content.json",
+    "data/exhibits.ts"
+   ],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "ContentModal"
+   ]
+  },
+  {
+   "id": "ui/HudTray.tsx",
+   "lines": 116,
+   "bytes": 5153,
+   "imports": [],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "TaskbarAction",
+    "HudTray"
+   ]
+  },
+  {
+   "id": "ui/InstagramPostView.tsx",
+   "lines": 87,
+   "bytes": 2648,
+   "imports": [],
+   "externals": [],
+   "exports": [
+    "InstagramPostView"
+   ]
+  },
+  {
+   "id": "ui/InstagramProfile.tsx",
+   "lines": 94,
+   "bytes": 3524,
+   "imports": [
+    "data/instagramPosts.json",
+    "ui/InstagramPostView.tsx"
+   ],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "InstagramProfile"
+   ]
+  },
+  {
+   "id": "ui/PhoneOverlay.tsx",
+   "lines": 94,
+   "bytes": 4218,
+   "imports": [
+    "systems/GameState.ts",
+    "ui/InstagramProfile.tsx"
+   ],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "PhoneOverlay"
+   ]
+  },
+  {
+   "id": "ui/ResumeViewer.tsx",
+   "lines": 41,
+   "bytes": 1363,
+   "imports": [],
+   "externals": [
+    "react"
+   ],
+   "exports": [
+    "RESUME_PDF",
+    "ResumeViewer"
+   ]
+  },
+  {
+   "id": "ui/SpotifyPlayer.tsx",
+   "lines": 55,
+   "bytes": 1982,
+   "imports": [],
+   "externals": [],
+   "exports": [
+    "SpotifyPlayer"
+   ]
+  }
+ ],
+ "walkthroughs": [
+  {
+   "id": "load",
+   "title": "Opening the site",
+   "blurb": "What happens between typing the address and seeing the profile.",
+   "steps": [
+    {
+     "file": "main.tsx",
+     "symbol": "createRoot",
+     "text": "The browser runs main.tsx, which mounts the React app."
+    },
+    {
+     "file": "ui/App.tsx",
+     "symbol": "startWithAbout",
+     "text": "The app starts the game and puts the Trainer Profile on top of it."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "start",
+     "text": "The engine boots: it creates the player, Typhlosion, and the crowd."
+    },
+    {
+     "file": "engine/assets.ts",
+     "symbol": "loadAssets",
+     "text": "Sprite sheets and fonts download in parallel with Promise.all."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "loadMap",
+     "text": "The starting area is looked up by name."
+    },
+    {
+     "file": "maps/index.ts",
+     "symbol": "MAPS",
+     "text": "All 12 areas are registered in one table."
+    },
+    {
+     "file": "maps/town.ts",
+     "symbol": "groundGrid",
+     "text": "An area is just data: rows of ground letters plus a list of objects."
+    },
+    {
+     "file": "engine/world.ts",
+     "symbol": "World",
+     "text": "World turns that data into a 3D scene and a map of blocked squares."
+    },
+    {
+     "file": "engine/ground.ts",
+     "symbol": "paintGround",
+     "text": "Every ground letter is painted into one pixel-art texture."
+    },
+    {
+     "file": "engine/props.ts",
+     "symbol": "buildProp",
+     "text": "Each building and object is built from boxes and cylinders, its textures painted in code."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "requestAnimationFrame",
+     "text": "The game loop starts and redraws about 60 times a second."
+    },
+    {
+     "file": "ui/AboutScreen.tsx",
+     "symbol": "AboutScreen",
+     "text": "The profile window appears over the running game."
+    }
+   ]
+  },
+  {
+   "id": "step",
+   "title": "Taking a step",
+   "blurb": "One press of W, from the keyboard to the screen.",
+   "steps": [
+    {
+     "file": "engine/engine.ts",
+     "symbol": "KEY_DIR",
+     "text": "The key press (W A S D or an arrow) becomes a direction."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "handleExplore",
+     "text": "The engine works out what moving that way means."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "blocked",
+     "text": "It asks whether the square ahead is free."
+    },
+    {
+     "file": "engine/world.ts",
+     "symbol": "isSolid",
+     "text": "The world answers from the blocked-square map it built when the area loaded."
+    },
+    {
+     "file": "engine/crowd.ts",
+     "symbol": "occupies",
+     "text": "The crowd answers whether a pedestrian is standing there."
+    },
+    {
+     "file": "engine/actor.ts",
+     "symbol": "update",
+     "text": "The player sprite glides to the next square, frame by frame."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "triggerAt",
+     "text": "On arrival it checks for exits and walk-up exhibit spots."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "renderer.render",
+     "text": "Three.js draws the new frame with WebGL."
+    }
+   ]
+  },
+  {
+   "id": "exhibit",
+   "title": "Opening an exhibit",
+   "blurb": "How stepping beside a Hall of Fame exhibit opens its window.",
+   "steps": [
+    {
+     "file": "maps/hallOfFame.ts",
+     "symbol": "triggers",
+     "text": "The Hall of Fame map lists walk-up spots beside each exhibit."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "runScript",
+     "text": "Stepping onto one runs that exhibit's script as an async function."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "openContent",
+     "text": "The script asks for a window to open, then waits until it closes."
+    },
+    {
+     "file": "ui/App.tsx",
+     "symbol": "openContent",
+     "text": "The app passes the request across from the engine to the interface."
+    },
+    {
+     "file": "systems/GameState.ts",
+     "symbol": "activeContentId",
+     "text": "It lands in the shared game state, a Zustand store."
+    },
+    {
+     "file": "ui/ContentModal.tsx",
+     "symbol": "ContentModal",
+     "text": "The window component sees the change and eases in."
+    },
+    {
+     "file": "data/exhibits.ts",
+     "symbol": "EXHIBIT_CARDS",
+     "text": "Its text comes from an editable data file, not from code."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "isPaused",
+     "text": "The game holds still until the window closes."
+    }
+   ]
+  },
+  {
+   "id": "battle",
+   "title": "Battling a legendary",
+   "blurb": "From walking into the grove to winning the music player.",
+   "steps": [
+    {
+     "file": "maps/lake.ts",
+     "symbol": "legendary",
+     "text": "The grove's map file marks where Latias is waiting."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "inLegendaryZone",
+     "text": "Every step checks whether you have walked into its zone."
+    },
+    {
+     "file": "engine/engine.ts",
+     "symbol": "spawnAndEncounter",
+     "text": "Latias flies in beside you and the encounter starts."
+    },
+    {
+     "file": "systems/BattleSystem.ts",
+     "symbol": "LEGENDARIES",
+     "text": "Its level, health, and lines come from a JSON file."
+    },
+    {
+     "file": "engine/battle.ts",
+     "symbol": "Battle",
+     "text": "The battle plays in its own 3D scene with animated sprites."
+    },
+    {
+     "file": "systems/BottomState.ts",
+     "symbol": "useBottom",
+     "text": "The battle menu's state lives in a second Zustand store."
+    },
+    {
+     "file": "ui/BattleBar.tsx",
+     "symbol": "BattleBar",
+     "text": "The React battle menu (Fight, Bag, Run) reads that store."
+    },
+    {
+     "file": "systems/GameState.ts",
+     "symbol": "unlockMusic",
+     "text": "Winning unlocks the music player."
+    }
+   ]
+  }
+ ]
+}

@@ -68,7 +68,7 @@ Walk up the red carpet. Each exhibit opens on its own when you step right beside
 | Purdue Pete statue | My college graduation photo |
 | Robotic hands at a piano | The **Piano Hand Algorithms** interactive dashboard |
 | Rolls-Royce on a turntable | The **Rolls-Royce Data Synthesizer** interactive dashboard |
-| Giant handheld console | "How I built this": how this website was made |
+| Giant handheld console | **How PokéMe is built**: an interactive map of this site's code, with step-by-step walkthroughs |
 | Eli Lilly console | My work as an AI Fellow at Eli Lilly |
 
 After you've opened both project dashboards, my contact card appears.
@@ -86,11 +86,12 @@ the game's code.
 | My headshot | Replace `public/material/about/headshot.webp` |
 | The scrolling photos in my profile, and their captions | Photos in `public/material/about/`, captions at the top of `src/ui/AboutScreen.tsx` (the `PHOTOS` list) |
 | The text in my profile | The `PAGES` list near the top of `src/ui/AboutScreen.tsx` |
-| The Hall of Fame cards (Eli Lilly, "How I built this") | `src/data/exhibits.ts` |
+| The Eli Lilly card in the Hall of Fame | `src/data/exhibits.ts` |
 | The Hall of Fame photos | `public/material/halloffame/` |
 | My email, LinkedIn, and GitHub links | The `contact` entry in `src/data/content.json` |
 | The volleyball highlight videos | `public/videos/`, listed in the `highlights` entry of `src/data/content.json` |
 | The project dashboards | `public/piano-hand-project/` and `public/rolls royce data synthesizer project/` |
+| The "How PokéMe is built" dashboard | `public/pokeme-architecture/`. After changing code, refresh it with `npx tsx tools/trace_architecture.ts` |
 | The link preview shown when the site is shared | Replace `public/og-preview.png` (1200 × 630 pixels) |
 
 After editing, check your change by running the site on your computer (next section).
@@ -155,7 +156,8 @@ src/
   systems/  shared game state (Zustand)
   data/     editable text: résumé data, contacts, Hall of Fame cards
 public/     files served as-is: résumé, photos, videos, dashboards, game sprites
-tools/      scripts that prepared the sprite sheets and videos
+tools/      scripts that prepared the sprite sheets and videos, and traced the
+            architecture dashboard's data from the real source files
 assets-src/ original sprite sheets the game sprites were cut from
 ```
 
@@ -164,6 +166,12 @@ assets-src/ original sprite sheets the game sprites were cut from
 | `npm run dev` | Run locally with live reload |
 | `npm run build` | Type-check and build the production site into `dist/` |
 | `npm run preview` | Serve the built `dist/` folder locally |
+
+**Refreshing the "How PokéMe is built" dashboard.** Its diagram comes from the real source, not hand-drawn:
+`npx tsx tools/trace_architecture.ts` reads every file's size and imports into
+`public/pokeme-architecture/data.json`. Each walkthrough step names a file and a function, and the
+script stops with an error if that function no longer exists there, so the walkthroughs can't drift
+out of date unnoticed.
 
 ## Credits
 

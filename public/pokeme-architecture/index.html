@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How PokéMe Is Built</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --surface-page: #eef0f4; --surface-card: #f8f9fb; --surface-sunken: #e6e8ee;
+    --text-primary: #10131c; --text-secondary: #4c5266; --text-muted: #7a8096;
+    --border: rgba(16,19,28,0.10); --border-strong: rgba(16,19,28,0.20);
+    --grid: #dcdfe8; --baseline: #b8bdcc;
+    --accent: #2f8797; --accent-soft: #d7eef1;
+    --path-gold: #c97a4a; --path-gold-soft: #f7ebe0;
+    --good: #5c8f57; --purple: #8b74ad; --purple-soft: #ece4f5;
+    --critical: #b5524a; --critical-soft: #fbe4e1;
+    --seq-1: #d7eef1; --seq-2: #aedbe1; --seq-3: #82c6cf; --seq-4: #57b0bc; --seq-5: #3a94a1; --seq-6: #2a7482; --seq-7: #1a4d57;
+    --shadow: 0 1px 2px rgba(16,19,28,0.06), 0 8px 24px rgba(16,19,28,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-page: #0a0d14; --surface-card: #141926; --surface-sunken: #0f131d;
+      --text-primary: #eef1f8; --text-secondary: #9aa1b8; --text-muted: #656d84;
+      --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.16);
+      --grid: #232a3a; --baseline: #333c52;
+      --accent: #5bc0d1; --accent-soft: #163338;
+      --path-gold: #e6a06a; --path-gold-soft: #3d2c1a;
+      --good: #8fc488; --purple: #b49bd6; --purple-soft: #332a47;
+      --critical: #e08079; --critical-soft: #3d201e;
+      --seq-1: #163338; --seq-2: #1d454c; --seq-3: #276068; --seq-4: #358490; --seq-5: #4ba7b3; --seq-6: #74c4cd; --seq-7: #a8dde6;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 28px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-page: #0a0d14; --surface-card: #141926; --surface-sunken: #0f131d;
+    --text-primary: #eef1f8; --text-secondary: #9aa1b8; --text-muted: #656d84;
+    --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.16);
+    --grid: #232a3a; --baseline: #333c52;
+    --accent: #5bc0d1; --accent-soft: #163338;
+    --path-gold: #e6a06a; --path-gold-soft: #3d2c1a;
+    --good: #8fc488; --purple: #b49bd6; --purple-soft: #332a47;
+    --critical: #e08079; --critical-soft: #3d201e;
+    --seq-1: #163338; --seq-2: #1d454c; --seq-3: #276068; --seq-4: #358490; --seq-5: #4ba7b3; --seq-6: #74c4cd; --seq-7: #a8dde6;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 28px rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--surface-page); color: var(--text-primary); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  .wrap { max-width: 1360px; margin: 0 auto; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: var(--surface-card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  .card-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  .card-head .sub { color: var(--text-muted); font-size: 12.5px; }
+  .card-body { padding: 14px 16px; }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+
+  header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  header.top h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  header.top p { margin: 4px 0 0; color: var(--text-secondary); max-width: 780px; line-height: 1.5; }
+  .head-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn { background: var(--surface-sunken); border: 1px solid var(--border-strong); color: var(--text-primary); border-radius: 8px;
+    padding: 6px 12px; font: 600 12.5px 'IBM Plex Sans'; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--surface-card); border-color: var(--accent); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .about p { margin: 0 0 6px; line-height: 1.55; color: var(--text-secondary); }
+  .about p:last-child { margin: 0; }
+
+  .top-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; }
+  .label { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .segmented { display: inline-flex; flex-wrap: wrap; background: var(--surface-sunken); border: 1px solid var(--border-strong); border-radius: 8px; padding: 2px; gap: 2px; }
+  .segmented button { border: none; background: transparent; color: var(--text-secondary); padding: 6px 11px; border-radius: 6px; font: 600 12.5px 'IBM Plex Sans'; cursor: pointer; }
+  .segmented button.active { background: var(--surface-card); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .controls { display: flex; flex-direction: column; gap: 12px; }
+  .player { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .player .count { font: 600 12.5px 'IBM Plex Mono'; color: var(--text-secondary); margin-left: 4px; }
+  .blurb { color: var(--text-secondary); font-size: 13px; margin: 0; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .stat-tile { background: var(--surface-sunken); border-radius: 8px; padding: 9px 11px; cursor: help; }
+  .stat-tile .v { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+  .stat-tile .l { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+  /* walkthrough strip (grounding) */
+  .steps { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scroll-behavior: smooth; }
+  .step { flex: 0 0 210px; background: var(--surface-sunken); border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px;
+    cursor: pointer; transition: border-color .15s, background .15s, opacity .25s; text-align: left; color: inherit; font: inherit; }
+  .step:hover { border-color: var(--accent); }
+  .step .n { font: 600 11px 'IBM Plex Mono'; color: var(--text-muted); display: flex; justify-content: space-between; gap: 6px; }
+  .step .n span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .step p { margin: 5px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--text-secondary); }
+  .step.done { opacity: .6; }
+  .step.cur { background: var(--path-gold-soft); border-color: var(--path-gold); opacity: 1; }
+  .step.cur .n { color: var(--path-gold); }
+  .step.cur p { color: var(--text-primary); }
+
+  /* hero */
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; align-items: start; }
+  #graph { width: 100%; height: auto; display: block; }
+  .lane-bg { fill: var(--surface-sunken); }
+  .lane-title { font: 600 10.5px 'IBM Plex Sans'; fill: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; }
+  .lane-note { font: 400 11px 'IBM Plex Sans'; fill: var(--text-muted); }
+  .edge { fill: none; stroke: var(--baseline); stroke-width: 1.1; opacity: .55; transition: opacity .2s, stroke .2s; }
+  .edge.dim { opacity: .07; }
+  .edge.out { stroke: var(--seq-5); stroke-width: 2; opacity: 1; }
+  .edge.in { stroke: var(--purple); stroke-width: 2; opacity: 1; stroke-dasharray: 5 4; }
+  .edge.ext { stroke-dasharray: 2 4; }
+  .node { cursor: pointer; }
+  .node rect.box { fill: var(--surface-card); stroke: var(--border-strong); stroke-width: 1.2; transition: fill .2s, stroke .2s, opacity .2s; }
+  .node:hover rect.box { stroke: var(--accent); }
+  .node .nm { font: 600 11.5px 'IBM Plex Mono'; fill: var(--text-primary); pointer-events: none; }
+  .node .ln { font: 500 9.5px 'IBM Plex Mono'; fill: var(--text-muted); pointer-events: none; }
+  .node rect.bar { fill: var(--seq-4); }
+  .node.dim { opacity: .28; }
+  .node.sel rect.box { stroke: var(--text-primary); stroke-width: 2; }
+  .node.rel-out rect.box { stroke: var(--seq-5); stroke-width: 2; }
+  .node.rel-in rect.box { stroke: var(--purple); stroke-width: 2; stroke-dasharray: 4 3; }
+  .node.walk rect.box { fill: var(--path-gold-soft); }
+  .node.cur rect.box { fill: var(--path-gold-soft); stroke: var(--path-gold); stroke-width: 2.5; }
+  .node .badge circle { fill: var(--path-gold); }
+  .node .badge text { font: 700 9.5px 'IBM Plex Mono'; fill: var(--surface-card); text-anchor: middle; }
+  .flow { fill: none; stroke: var(--path-gold); stroke-width: 2.5; stroke-dasharray: 7 6; animation: dash 1.2s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset: -26; } }
+  .pulse { fill: none; stroke: var(--path-gold); stroke-width: 2; animation: pulse 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes pulse { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(1.18); } }
+  @media (prefers-reduced-motion: reduce) { .flow, .pulse, .pipe .arrow::after { animation: none; } }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--text-secondary); margin-top: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend svg { width: 26px; height: 10px; }
+
+  .inspector { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 12px; }
+  .inspector h3 { margin: 0; font: 600 16px 'IBM Plex Mono'; color: var(--text-primary); word-break: break-all; }
+  .inspector .path { font: 12px 'IBM Plex Mono'; color: var(--text-muted); }
+  .inspector .desc { margin: 0; line-height: 1.5; color: var(--text-secondary); }
+  .inspector .stepnote { background: var(--path-gold-soft); border: 1px solid var(--path-gold); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.45; }
+  .inspector .stepnote b { color: var(--path-gold); font-family: 'IBM Plex Mono', monospace; }
+  .mini { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .mini div { background: var(--surface-sunken); border-radius: 8px; padding: 6px 8px; cursor: help; }
+  .mini b { display: block; font: 600 15px 'IBM Plex Mono'; }
+  .mini span { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .links { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pill { border: 1px solid var(--border-strong); background: var(--surface-sunken); color: var(--text-primary); border-radius: 999px;
+    padding: 2px 9px; font: 500 11.5px 'IBM Plex Mono'; cursor: pointer; }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  .pill.out { border-color: var(--seq-5); }
+  .pill.in { border-style: dashed; border-color: var(--purple); }
+  .pill.ext { cursor: default; color: var(--text-secondary); }
+  .exports { font: 11.5px 'IBM Plex Mono'; color: var(--text-secondary); line-height: 1.6; word-break: break-word; }
+
+  /* loading */
+  #loading { position: fixed; inset: 0; background: var(--surface-page); z-index: 10; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 26px; padding: 24px; transition: opacity .35s; }
+  #loading.gone { opacity: 0; pointer-events: none; }
+  .pipe { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .pipe .st { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px; text-align: center; }
+  .pipe .ico { width: 62px; height: 62px; border-radius: 12px; background: var(--surface-card); border: 1px solid var(--border-strong);
+    display: grid; place-items: center; font: 600 12px 'IBM Plex Mono'; color: var(--accent); box-shadow: var(--shadow); }
+  .pipe .st span { font-size: 12px; color: var(--text-secondary); }
+  .pipe .arrow { width: 30px; height: 2px; background: var(--baseline); position: relative; overflow: hidden; }
+  .pipe .arrow::after { content: ''; position: absolute; inset: 0; width: 40%; background: var(--accent); animation: chase 1.4s linear infinite; }
+  @keyframes chase { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+  .loading-label { color: var(--text-muted); font-size: 13px; margin: 0; }
+  @media (max-width: 1060px) { .top-row, .hero-grid { grid-template-columns: 1fr; } .inspector { position: static; } }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="pipe" aria-label="The layers of the project">
+    <div class="st"><div class="ico">UI</div><span>React interface</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">⇄</div><span>Shared game state</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">TS</div><span>Game engine</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">{ }</div><span>Area data<br>and content</span></div><div class="arrow"></div>
+    <div class="st"><div class="ico">3D</div><span>Three.js<br>and WebGL</span></div>
+  </div>
+  <p class="loading-label" id="loadingLabel">Loading the project's real structure.</p>
+  <button class="btn primary" id="enterBtn" disabled>Loading.</button>
+</div>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>How PokéMe is built</h1>
+      <p>A map of the code behind this game. Every box is a real source file, and every line is a real import between them.
+        Pick a walkthrough to watch what happens inside the code when you do something in the game, or click any box to see what it does.</p>
+    </div>
+    <div class="head-actions">
+      <a class="btn" href="https://github.com/tylerkei9/pokeme-portfolio" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <button class="btn" id="themeBtn" title="Switch between light and dark">Theme</button>
+    </div>
+  </header>
+
+  <details class="card about" open>
+    <summary class="card-head"><h2>About this project</h2><span class="sub">Click to hide</span></summary>
+    <div class="card-body">
+      <p>My personal portfolio website, built as a playable Pokémon Black &amp; White style game. I wrote the 3D engine from scratch
+        in strict TypeScript on Three.js, and every building and object is built and painted in code, so the site ships no 3D model files.
+        The engine, the React interface, and the area data stay in separate layers that talk through a small shared state, which is
+        why adding a new area or exhibit means editing data rather than engine code.</p>
+      <p><strong>Stack:</strong> TypeScript, Three.js (WebGL), Canvas 2D, React, Zustand, Vite, Tailwind CSS</p>
+    </div>
+  </details>
+
+  <div class="top-row">
+    <div class="card">
+      <div class="card-head"><h2>Walkthrough</h2><span class="sub">Follow one action through the code</span></div>
+      <div class="card-body controls">
+        <div class="segmented" id="walkSel" role="tablist" aria-label="Choose a walkthrough"></div>
+        <p class="blurb" id="walkBlurb"></p>
+        <div class="player">
+          <button class="btn" id="prevBtn" title="Previous step">◀ Back</button>
+          <button class="btn primary" id="playBtn" title="Play the walkthrough step by step">▶ Play</button>
+          <button class="btn" id="nextBtn" title="Next step">Next ▶</button>
+          <span class="count" id="stepCount"></span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>By the numbers</h2><span class="sub">Counted from the source</span></div>
+      <div class="card-body"><div class="stat-grid" id="stats"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2 id="stepsTitle">Steps</h2><span class="sub">Click a step to jump to it</span></div>
+    <div class="card-body" style="padding-bottom:10px"><div class="steps" id="steps"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>The architecture</h2><span class="sub">Boxes are files, sized bar is length; lines are imports</span></div>
+    <div class="card-body">
+      <div class="hero-grid">
+        <div>
+          <svg id="graph" role="img" aria-label="Diagram of the project's source files and their imports"></svg>
+          <div class="legend">
+            <span><svg viewBox="0 0 26 10"><line x1="0" y1="5" x2="26" y2="5" stroke="var(--path-gold)" stroke-width="2.5" stroke-dasharray="7 6"/></svg>Walkthrough path</span>
+            <span><svg viewBox="0 0 26 10"><line x1="0" y1="5" x2="26" y2="5" stroke="var(--seq-5)" stroke-width="2"/></svg>Uses (imports)</span>
+            <span><svg viewBox="0 0 26 10"><line x1="0" y1="5" x2="26" y2="5" stroke="var(--purple)" stroke-width="2" stroke-dasharray="5 4"/></svg>Used by</span>
+            <span><svg viewBox="0 0 26 10"><line x1="0" y1="5" x2="26" y2="5" stroke="var(--baseline)" stroke-width="1.5" stroke-dasharray="2 4"/></svg>Outside library</span>
+          </div>
+        </div>
+        <aside class="inspector card" style="box-shadow:none" id="inspector" aria-live="polite"></aside>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Plain-language notes for each file. The structure (files, sizes, imports) comes from data.json,
+   traced from the source by tools/trace_architecture.ts. */
+const DESC = {
+  'main.tsx': 'The front door. The browser runs this first; it mounts the React app onto the page.',
+  'ui/App.tsx': 'The conductor. Starts the game engine, shows the profile, and opens windows when the engine asks for them.',
+  'ui/AboutScreen.tsx': 'The Trainer Profile window: name, quick links, the typewriter bio, and the scrolling photo strip.',
+  'ui/ContentModal.tsx': 'Every pop-up window: project dashboards, Hall of Fame photos and cards, the contact card, and videos.',
+  'ui/ResumeViewer.tsx': 'Shows the résumé PDF inside the game.',
+  'ui/HudTray.tsx': 'The small menu in the corner (résumé, profile, phone, skip) and its keyboard shortcuts.',
+  'ui/BattleBar.tsx': 'The battle menu (Fight, Bag, Run, Pokémon) shown under a battle.',
+  'ui/PhoneOverlay.tsx': 'The in-game phone with its app icons.',
+  'ui/InstagramProfile.tsx': 'A photo app inside the in-game phone.',
+  'ui/InstagramPostView.tsx': 'A single post inside the phone\'s photo app.',
+  'ui/SpotifyPlayer.tsx': 'The music player unlocked by beating Latias.',
+  'systems/GameState.ts': 'The shared memory between the game and the windows: which window is open, which legendaries are beaten, whether music is unlocked.',
+  'systems/BottomState.ts': 'The battle menu\'s state: which command is highlighted and what happens when you pick it.',
+  'systems/BattleSystem.ts': 'Reads each legendary\'s level, health, and lines from a JSON file.',
+  'systems/DeepLink.ts': 'Lets a web link open a specific window directly.',
+  'engine/engine.ts': 'The heart of the game: the 60-frames-a-second loop, input, movement, the camera, scripted events, and switching areas.',
+  'engine/world.ts': 'Turns one area\'s data into a 3D scene, and remembers which squares are blocked.',
+  'engine/ground.ts': 'Paints the ground (grass, paths, water edges, streets) into one pixel-art texture from the area\'s letter grid.',
+  'engine/props.ts': 'Builds every building and object from simple shapes with textures painted in code. The largest file: 53 kinds of objects.',
+  'engine/actor.ts': 'A character in the world: a flat sprite that always faces the camera and steps square by square.',
+  'engine/crowd.ts': 'The pedestrians and wild Pokémon that wander around, and what they say.',
+  'engine/battle.ts': 'The legendary battles: their own 3D scene, animations, and turn order.',
+  'engine/hud.ts': 'Text boxes, the location banner, and screen fades, drawn on a canvas over the 3D view.',
+  'engine/font.ts': 'Draws the pixel font letter by letter from a sprite sheet.',
+  'engine/assets.ts': 'Downloads the sprite sheets and fonts at startup, all at once.',
+  'engine/pixel.ts': 'Small shared drawing tools: canvases, colours, and crisp pixel textures.',
+  'maps/index.ts': 'The table of all 12 areas, plus where a new game starts.',
+  'maps/types.ts': 'The shape every area file follows: ground grid, objects, exits, triggers. TypeScript checks every area against it.',
+  'maps/*': 'The 12 areas. Each file is mostly data: rows of ground letters, a list of buildings and objects, exits, and events.',
+  'data/content.json': 'Editable text: résumé sections, contact links, and the highlight video list.',
+  'data/exhibits.ts': 'Editable text for the Hall of Fame cards.',
+  'data/legendaries.json': 'Latias and Lugia: levels, health, moves, and battle lines.',
+  'data/crowd.json': 'The pedestrians\' looks, names, and things they say.',
+  'data/instagramPosts.json': 'The posts shown in the phone\'s photo app.',
+  'three': 'Three.js: draws 3D graphics in the browser with WebGL.',
+  'react': 'React (with react-dom): builds the windows and menus.',
+  'zustand': 'Zustand: a tiny library for state shared between the game and the interface.',
+}
+const LANES = [
+  { key: 'entry', title: 'Start', note: 'runs first', ids: ['main.tsx'] },
+  { key: 'ui', title: 'Interface', note: 'React windows, menus', ids: ['ui/App.tsx', 'ui/AboutScreen.tsx', 'ui/ContentModal.tsx', 'ui/ResumeViewer.tsx', 'ui/HudTray.tsx', 'ui/BattleBar.tsx', 'ui/PhoneOverlay.tsx', 'ui/InstagramProfile.tsx', 'ui/InstagramPostView.tsx', 'ui/SpotifyPlayer.tsx'] },
+  { key: 'state', title: 'Shared state', note: 'Zustand, links both sides', ids: ['systems/DeepLink.ts', 'systems/GameState.ts', 'systems/BottomState.ts', 'systems/BattleSystem.ts'] },
+  { key: 'engine', title: 'Game engine', note: 'TypeScript, Three.js', ids: ['engine/engine.ts', 'engine/world.ts', 'engine/ground.ts', 'engine/props.ts', 'engine/crowd.ts', 'engine/actor.ts', 'engine/battle.ts', 'engine/hud.ts', 'engine/font.ts', 'engine/assets.ts', 'engine/pixel.ts'] },
+  { key: 'content', title: 'Areas and data', note: 'edited as plain data', ids: ['maps/index.ts', 'maps/*', 'maps/types.ts', 'data/exhibits.ts', 'data/content.json', 'data/legendaries.json', 'data/crowd.json', 'data/instagramPosts.json'] },
+  { key: 'lib', title: 'Libraries', note: 'all else is my code', ids: ['three', 'react', 'zustand'] },
+]
+const AREA_FILES = (id) => id.startsWith('maps/') && !['maps/index.ts', 'maps/types.ts'].includes(id)
+let D, nodes = {}, edges = [], walk = 0, stepIdx = 0, selected = null, timer = null
+const $ = (id) => document.getElementById(id)
+const short = (id) => id === 'maps/*' ? '12 area files' : id.replace(/^(ui|engine|systems|maps|data)\//, '').replace(/\.(tsx?|json)$/, '')
+// long names are clipped to fit their box; the full name is in the tooltip and inspector
+const fit = (name, w) => { const max = Math.floor((w - 14) / 7); return name.length > max ? name.slice(0, max - 1) + '…' : name }
+const nodeOf = (file) => AREA_FILES(file) ? 'maps/*' : file
+
+async function load() {
+  D = await (await fetch('data.json')).json()
+  build()
+  $('loadingLabel').textContent = `Loaded ${D.modules.filter((m) => !m.id.endsWith('.json')).length} source files and ${D.modules.reduce((s, m) => s + m.imports.length, 0)} imports.`
+  $('enterBtn').disabled = false
+  $('enterBtn').textContent = 'Enter dashboard'
+}
+$('enterBtn').addEventListener('click', () => $('loading').classList.add('gone'))
+
+function build() {
+  // nodes: one per file, the 12 area files folded into one, plus the three libraries
+  const mods = Object.fromEntries(D.modules.map((m) => [m.id, m]))
+  for (const lane of LANES) for (const id of lane.ids) {
+    if (id === 'maps/*') {
+      const areas = D.modules.filter((m) => AREA_FILES(m.id))
+      nodes[id] = { id, lane: lane.key, lines: areas.reduce((s, m) => s + m.lines, 0), files: areas.map((m) => m.id), exports: areas.flatMap((m) => m.exports), externals: [] }
+    } else if (lane.key === 'lib') nodes[id] = { id, lane: 'lib', lines: 0, exports: [], externals: [] }
+    else if (mods[id]) nodes[id] = { id, lane: lane.key, lines: mods[id].lines, exports: mods[id].exports, externals: mods[id].externals }
+  }
+  const seen = new Set()
+  for (const m of D.modules) {
+    const from = nodeOf(m.id)
+    if (!nodes[from]) continue
+    for (const t of m.imports) {
+      const to = nodeOf(t)
+      if (from === to || !nodes[to]) continue
+      const k = from + '>' + to
+      if (!seen.has(k)) { seen.add(k); edges.push({ from, to, ext: false }) }
+    }
+    for (const x of m.externals) {
+      const to = x === 'react-dom' ? 'react' : x
+      const k = from + '>' + to
+      if (nodes[to] && !seen.has(k)) { seen.add(k); edges.push({ from, to, ext: true }) }
+    }
+  }
+  for (const n of Object.values(nodes)) {
+    n.uses = edges.filter((e) => e.from === n.id).map((e) => e.to)
+    n.usedBy = edges.filter((e) => e.to === n.id).map((e) => e.from)
+  }
+  stats()
+  $('walkSel').innerHTML = D.walkthroughs.map((w, i) => `<button role="tab" data-i="${i}" class="${i === 0 ? 'active' : ''}">${w.title}</button>`).join('')
+  $('walkSel').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => setWalk(+b.dataset.i)))
+  layout()
+  setWalk(0)
+}
+
+function stats() {
+  const code = D.modules.filter((m) => !m.id.endsWith('.json'))
+  const lines = code.reduce((s, m) => s + m.lines, 0)
+  const engine = code.filter((m) => m.id.startsWith('engine/')).reduce((s, m) => s + m.lines, 0)
+  const imports = D.modules.reduce((s, m) => s + m.imports.length, 0)
+  const tiles = [
+    [code.length, 'Source files', 'TypeScript and TSX files in src/.'],
+    [lines.toLocaleString(), 'Lines of code', 'All TypeScript, counted line by line.'],
+    [imports, 'Connections', 'Imports between my own files: each one is a line in the diagram.'],
+    [Math.round(engine / lines * 100) + '%', 'Is the engine', 'Share of the code in src/engine/, the part written from scratch.'],
+    ['3', 'Outside libraries', 'Three.js, React, and Zustand. The rest is my own code.'],
+    ['0', '3D model files', 'Every building and object is generated in code.'],
+  ]
+  $('stats').innerHTML = tiles.map(([v, l, t]) => `<div class="stat-tile" title="${t}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')
+}
+
+/* lanes stacked top to bottom; nodes spread evenly across each lane */
+const VW = 1180, LANE_H = 92, TOP = 8, LEFT = 156, NODE_H = 40
+function layout() {
+  const H = TOP + LANES.length * LANE_H
+  const svg = $('graph')
+  svg.setAttribute('viewBox', `0 0 ${VW} ${H}`)
+  LANES.forEach((lane, li) => {
+    const y = TOP + li * LANE_H + LANE_H / 2
+    const n = lane.ids.length, span = VW - LEFT - 14
+    const w = Math.min(124, span / n - 8)
+    lane.ids.forEach((id, i) => {
+      if (!nodes[id]) return
+      const cx = LEFT + (span / n) * (i + 0.5)
+      Object.assign(nodes[id], { x: cx, y, w })
+    })
+  })
+  const maxLines = Math.max(...Object.values(nodes).map((n) => n.lines))
+  let s = ''
+  LANES.forEach((lane, li) => {
+    const y = TOP + li * LANE_H
+    s += `<rect class="lane-bg" x="0" y="${y + 4}" width="${VW}" height="${LANE_H - 8}" rx="10"/>
+      <text class="lane-title" x="14" y="${y + LANE_H / 2 - 2}">${lane.title}</text>
+      <text class="lane-note" x="14" y="${y + LANE_H / 2 + 13}">${lane.note}</text>`
+  })
+  s += '<g id="edges">' + edges.map((e, i) => `<path class="edge${e.ext ? ' ext' : ''}" data-i="${i}" d="${edgePath(e)}"/>`).join('') + '</g>'
+  s += '<g id="flowLayer"></g>'
+  for (const n of Object.values(nodes)) {
+    const bw = n.lines ? Math.max(3, (n.w - 16) * Math.sqrt(n.lines / maxLines)) : 0
+    const tip = (DESC[n.id] || '') + (n.lines ? ` (${n.lines.toLocaleString()} lines)` : '')
+    s += `<g class="node" data-id="${n.id}" transform="translate(${n.x - n.w / 2},${n.y - NODE_H / 2})" tabindex="0" role="button" aria-label="${short(n.id)}">
+      <title>${esc(tip)}</title>
+      <rect class="box" width="${n.w}" height="${NODE_H}" rx="8"/>
+      <text class="nm" x="8" y="17">${esc(fit(short(n.id), n.w))}</text>
+      ${n.lines ? `<rect class="bar" x="8" y="25" width="${bw}" height="4" rx="2"/><text class="ln" x="${n.w - 8}" y="35" text-anchor="end">${n.lines.toLocaleString()}</text>` : `<text class="ln" x="8" y="33">library</text>`}
+      <g class="badge" style="display:none"><circle cx="${n.w}" cy="0" r="9"/><text x="${n.w}" y="3.5"></text></g>
+    </g>`
+  }
+  svg.innerHTML = s
+  svg.querySelectorAll('.node').forEach((g) => {
+    g.addEventListener('click', () => select(g.dataset.id))
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.dataset.id) } })
+    g.addEventListener('mouseenter', () => focusRel(g.dataset.id))
+    g.addEventListener('mouseleave', () => focusRel(selected))
+  })
+}
+
+function edgePath(e) {
+  const a = nodes[e.from], b = nodes[e.to]
+  if (a.lane === b.lane) {
+    // same lane: an arc that dips under the row
+    const y = a.y + NODE_H / 2, dip = 22 + Math.abs(b.x - a.x) * 0.08
+    return `M${a.x},${y} C${a.x},${y + dip} ${b.x},${y + dip} ${b.x},${y}`
+  }
+  const down = b.y > a.y
+  const y1 = a.y + (down ? NODE_H / 2 : -NODE_H / 2), y2 = b.y + (down ? -NODE_H / 2 : NODE_H / 2)
+  const my = (y1 + y2) / 2
+  return `M${a.x},${y1} C${a.x},${my} ${b.x},${my} ${b.x},${y2}`
+}
+
+function focusRel(id) {
+  const svg = $('graph')
+  svg.querySelectorAll('.node').forEach((g) => g.classList.remove('rel-out', 'rel-in', 'dim', 'sel'))
+  svg.querySelectorAll('.edge').forEach((p) => p.classList.remove('out', 'in', 'dim'))
+  if (!id) return
+  const n = nodes[id]
+  svg.querySelectorAll('.node').forEach((g) => {
+    const o = g.dataset.id
+    if (o === id) g.classList.add('sel')
+    else if (n.uses.includes(o)) g.classList.add('rel-out')
+    else if (n.usedBy.includes(o)) g.classList.add('rel-in')
+    else if (!g.classList.contains('walk')) g.classList.add('dim') // files on the walkthrough path stay readable
+  })
+  svg.querySelectorAll('.edge').forEach((p) => {
+    const e = edges[+p.dataset.i]
+    if (e.from === id) p.classList.add('out')
+    else if (e.to === id) p.classList.add('in')
+    else p.classList.add('dim')
+  })
+}
+
+function setWalk(i) {
+  walk = i; stepIdx = 0; stop()
+  $('walkSel').querySelectorAll('button').forEach((b) => b.classList.toggle('active', +b.dataset.i === i))
+  const w = D.walkthroughs[i]
+  $('walkBlurb').textContent = w.blurb
+  $('stepsTitle').textContent = `Steps: ${w.title}`
+  $('steps').innerHTML = w.steps.map((s, k) => `<button class="step" data-k="${k}">
+    <div class="n"><span>${k + 1}</span><span>${esc(short(nodeOf(s.file)))}</span></div><p>${esc(s.text)}</p></button>`).join('')
+  $('steps').querySelectorAll('.step').forEach((b) => b.addEventListener('click', () => { stop(); goStep(+b.dataset.k) }))
+  goStep(0)
+}
+
+function goStep(k) {
+  const w = D.walkthroughs[walk]
+  stepIdx = Math.max(0, Math.min(w.steps.length - 1, k))
+  $('stepCount').textContent = `Step ${stepIdx + 1} of ${w.steps.length}`
+  $('prevBtn').disabled = stepIdx === 0
+  $('nextBtn').disabled = stepIdx === w.steps.length - 1
+  $('steps').querySelectorAll('.step').forEach((b, j) => { b.classList.toggle('cur', j === stepIdx); b.classList.toggle('done', j < stepIdx) })
+  const cur = $('steps').querySelector('.step.cur')
+  if (cur) cur.parentElement.scrollTo({ left: cur.offsetLeft - cur.parentElement.offsetLeft - 40, behavior: 'smooth' })
+  drawFlow()
+  selected = nodeOf(w.steps[stepIdx].file)
+  focusRel(selected)
+  inspect(selected)
+}
+
+/* the walkthrough path: gold dashes linking each step's file so far, numbered badges on the files */
+function drawFlow() {
+  const w = D.walkthroughs[walk], svg = $('graph')
+  const visited = w.steps.slice(0, stepIdx + 1).map((s) => nodeOf(s.file))
+  let d = '', last = null
+  visited.forEach((id) => {
+    const n = nodes[id]
+    if (!last) d += `M${n.x},${n.y}`
+    else if (last !== id) d += ` Q${(nodes[last].x + n.x) / 2},${Math.min(nodes[last].y, n.y) - 26} ${n.x},${n.y}`
+    last = id
+  })
+  const curN = nodes[visited[visited.length - 1]]
+  $('flowLayer').innerHTML = (d.includes('Q') ? `<path class="flow" d="${d}"/>` : '') +
+    `<rect class="pulse" x="${curN.x - curN.w / 2 - 3}" y="${curN.y - NODE_H / 2 - 3}" width="${curN.w + 6}" height="${NODE_H + 6}" rx="10"/>`
+  svg.querySelectorAll('.node').forEach((g) => {
+    const id = g.dataset.id, nums = []
+    w.steps.forEach((s, k) => { if (k <= stepIdx && nodeOf(s.file) === id) nums.push(k + 1) })
+    g.classList.toggle('walk', nums.length > 0)
+    g.classList.toggle('cur', id === visited[visited.length - 1])
+    const badge = g.querySelector('.badge')
+    badge.style.display = nums.length ? '' : 'none'
+    badge.querySelector('text').textContent = nums[nums.length - 1] || ''
+  })
+}
+
+function select(id) { stop(); selected = id; focusRel(id); inspect(id) }
+
+function inspect(id) {
+  const n = nodes[id], w = D.walkthroughs[walk]
+  const here = w.steps.map((s, k) => ({ ...s, k })).filter((s) => nodeOf(s.file) === id)
+  const fileList = n.files ? n.files.map((f) => f.replace('maps/', '')).join(', ') : null
+  const pill = (t, cls) => `<button class="pill ${cls}" data-go="${t}" title="${esc(DESC[t] || '')}">${esc(short(t))}</button>`
+  $('inspector').innerHTML = `<div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+    <div><div class="label">${esc(laneTitle(n.lane))}</div><h3>${esc(short(id))}</h3>
+      <div class="path">${n.lane === 'lib' ? 'npm package' : id === 'maps/*' ? 'src/maps/ (12 files)' : 'src/' + id}</div></div>
+    <p class="desc">${esc(DESC[id] || '')}</p>
+    ${here.length ? `<div class="stepnote">${here.map((s) => `<b>Step ${s.k + 1}</b> ${esc(s.text)} <span class="mono" style="color:var(--text-muted)">${esc(s.symbol)}</span>`).join('<br>')}</div>` : ''}
+    <div class="mini">
+      <div title="Lines of TypeScript in this file"><b>${n.lines ? n.lines.toLocaleString() : 'n/a'}</b><span>Lines</span></div>
+      <div title="Other files this one imports"><b>${n.uses.length}</b><span>Uses</span></div>
+      <div title="Files that import this one"><b>${n.usedBy.length}</b><span>Used by</span></div>
+    </div>
+    ${fileList ? `<div><div class="label" style="margin-bottom:4px">Area files</div><div class="exports">${esc(fileList)}</div></div>` : ''}
+    ${n.uses.length ? `<div><div class="label" style="margin-bottom:5px">Uses</div><div class="links">${n.uses.map((t) => pill(t, nodes[t].lane === 'lib' ? 'out ext' : 'out')).join('')}</div></div>` : ''}
+    ${n.usedBy.length ? `<div><div class="label" style="margin-bottom:5px">Used by</div><div class="links">${n.usedBy.map((t) => pill(t, 'in')).join('')}</div></div>` : ''}
+    ${n.exports.length ? `<div><div class="label" style="margin-bottom:4px">Shares with other files</div><div class="exports">${esc(n.exports.slice(0, 14).join(', '))}${n.exports.length > 14 ? ` and ${n.exports.length - 14} more` : ''}</div></div>` : ''}
+  </div>`
+  $('inspector').querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => select(b.dataset.go)))
+}
+const laneTitle = (k) => (LANES.find((l) => l.key === k) || {}).title || ''
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+
+function stop() { clearInterval(timer); timer = null; $('playBtn').textContent = '▶ Play' }
+$('playBtn').addEventListener('click', () => {
+  if (timer) return stop()
+  const w = D.walkthroughs[walk]
+  if (stepIdx >= w.steps.length - 1) goStep(0)
+  $('playBtn').textContent = '❚❚ Pause'
+  timer = setInterval(() => {
+    if (stepIdx >= D.walkthroughs[walk].steps.length - 1) return stop()
+    goStep(stepIdx + 1)
+  }, 2200)
+})
+$('prevBtn').addEventListener('click', () => { stop(); goStep(stepIdx - 1) })
+$('nextBtn').addEventListener('click', () => { stop(); goStep(stepIdx + 1) })
+$('themeBtn').addEventListener('click', () => {
+  const r = document.documentElement
+  const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+  r.dataset.theme = dark ? 'light' : 'dark'
+})
+load().catch((e) => { $('loadingLabel').textContent = 'The project data could not be loaded. Try refreshing the page. (' + e.message + ')' })
+</script>
+</body>
+</html>
