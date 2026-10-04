@@ -20,8 +20,10 @@ with buttons for my résumé, the Hall of Fame, LinkedIn, and GitHub.
 4. [Changing the content](#changing-the-content)
 5. [Running it on your own computer](#running-it-on-your-own-computer)
 6. [Putting it online](#putting-it-online)
-7. [How it's built](#how-its-built)
-8. [Credits](#credits)
+7. [Common questions](#common-questions)
+8. [What these words mean](#what-these-words-mean)
+9. [How it's built](#how-its-built)
+10. [Credits](#credits)
 
 ---
 
@@ -129,6 +131,42 @@ The finished website is a folder of ordinary files, so any static host works.
    show the preview picture when the link is shared.
 
 To build the final files yourself without publishing, run `npm run build`. They appear in `dist/`.
+
+**After it's live, updates are automatic.** Every time a change is saved to this GitHub repository,
+Vercel rebuilds and republishes the site within a couple of minutes. You never upload files by hand.
+
+## Common questions
+
+**How do I update my résumé on the live site?**
+Replace `public/resume.pdf` with the new file (same name), then save the change to GitHub. On
+github.com you can do this without any tools: open the `public` folder, choose **Add file → Upload
+files**, drop in the new `resume.pdf`, and click **Commit changes**. Vercel republishes the site by itself.
+
+**Why doesn't the game work on my phone?**
+It's designed for a computer keyboard. On a phone the Trainer Profile still shows, with buttons for the
+résumé, LinkedIn, and GitHub.
+
+**Something looks broken after a change. How do I undo it?**
+On GitHub, every saved change is kept in the history (the **Commits** list). In Vercel, open the
+project, go to **Deployments**, pick an earlier one that worked, and choose **Promote to Production**
+to put it back online instantly.
+
+**Does this cost anything?**
+No. GitHub and Vercel's free plans cover a personal site like this one.
+
+## What these words mean
+
+| Word | Meaning |
+|---|---|
+| **Repository (repo)** | A project folder stored on GitHub, with the full history of every change |
+| **Commit** | One saved change in that history, with a short note describing it |
+| **Push** | Sending saved changes from your computer up to GitHub |
+| **Terminal** | The text window where you type commands like `npm run dev` |
+| **Node.js / npm** | Free tools that download this project's building blocks and run it |
+| **Build** | Turning the source code into the finished files a browser loads (the `dist` folder) |
+| **Deploy** | Putting the built site on the internet at a public address |
+| **Vercel** | A free hosting service that builds and publishes the site straight from GitHub |
+| **Link preview** | The picture and title that appear when the site's link is shared on LinkedIn or Slack |
 
 ---
 
