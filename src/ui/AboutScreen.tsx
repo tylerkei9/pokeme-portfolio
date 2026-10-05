@@ -7,6 +7,7 @@ const PHOTOS = [
   { src: '/material/halloffame/aau-nationals-2022.jpg', caption: 'Volleyball' },
   { src: '/material/about/graduation.jpg', caption: 'High school graduation' },
   { src: '/material/about/basketball.jpg', caption: 'Basketball' },
+  { src: '/material/about/waterfront.jpg', caption: 'By the water' },
 ]
 
 const PAGES = [
