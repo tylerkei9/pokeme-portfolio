@@ -5,6 +5,10 @@
 <style>
   /* one look only: no theme toggle, no style picker, no export */
   #btn-theme, .preset-wrap, .export-wrap { display: none !important; }
+  /* presentation mode does nothing useful inside the game's window */
+  #btn-present { display: none !important; }
+  /* with every control hidden, drop the empty toolbar frame too */
+  .toolbar { display: none !important; }
   /* just the diagram: no node index under it */
   #node-outline, #reader-rail { display: none !important; }
   /* source badges stay out of the first view; clicking a box still shows its verified sources */
@@ -20,11 +24,11 @@
     }
     pin()
     new MutationObserver(pin).observe(root, { attributes: true, attributeFilter: ['data-theme', 'data-preset'] })
-    // the viewer's own shortcuts for theme (T) and export (E)
+    // the viewer's own shortcuts for theme (T), export (E), and presentation (F)
     window.addEventListener('keydown', function (e) {
       var t = e.target
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
-      if (!e.metaKey && !e.ctrlKey && !e.altKey && /^[tTeE]$/.test(e.key)) { e.stopImmediatePropagation(); e.preventDefault() }
+      if (!e.metaKey && !e.ctrlKey && !e.altKey && /^[tTeEfF]$/.test(e.key)) { e.stopImmediatePropagation(); e.preventDefault() }
     }, true)
   })()
 </script>
