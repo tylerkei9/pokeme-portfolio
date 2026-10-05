@@ -213,7 +213,7 @@ node .claude/skills/archify/bin/archify.mjs finalize architecture public/archite
 node tools/archify-postprocess.mjs
 ```
 
-The last step keeps the page in Classic light, hides the source badges until a box is clicked, and removes Archify's theme, style, export, full-screen, path, lens, zoom, and node-index controls. It also adds the opening animation: the numbered main path appears box by box, then the rest of the diagram fills in.
+The last step keeps the page in Classic light, hides the source badges until a box is clicked, and removes Archify's theme, style, export, full-screen, path, lens, zoom, and node-index controls. It also adds the opening animation: the numbered main path builds box by box, each arrow drawing itself to the next box, then the remaining boxes grow outward along their arrows.
 
 ## Credits
 
