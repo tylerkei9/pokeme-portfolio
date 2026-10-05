@@ -42,6 +42,87 @@
       if (!e.metaKey && !e.ctrlKey && !e.altKey && /^[tTeEfF]$/.test(e.key)) { e.stopImmediatePropagation(); e.preventDefault() }
     }, true)
 
+    // Smart placement for the details panel ("Semantic passport") that opens when a box is
+    // selected. Archify always opens it in the same corner, where it can cover the box itself.
+    // Each time the selection changes, try spots around the diagram and pick the closest one that
+    // never covers the selected box, avoids its connected boxes, and covers as few others as
+    // possible. A panel the visitor has dragged stays put until the next selection.
+    ;(function placePassport() {
+      var PAD = 12, GAP = 18
+      function ready(fn) { document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn() }
+      ready(function () {
+        var chip = document.getElementById('focus-chip')
+        var svg = document.querySelector('svg [data-node-id]') && document.querySelector('svg [data-node-id]').ownerSVGElement
+        if (!chip || !svg) return
+        var lastId = null, userMoved = false, placing = false
+        function rect(el) { return el.getBoundingClientRect() }
+        function overlap(a, b) {
+          var w = Math.min(a.r, b.r) - Math.max(a.l, b.l), h = Math.min(a.b, b.b) - Math.max(a.t, b.t)
+          return w > 0 && h > 0 ? w * h : 0
+        }
+        function box(r, ox, oy) { return { l: r.left - ox, t: r.top - oy, r: r.right - ox, b: r.bottom - oy } }
+        function place() {
+          var sel = svg.querySelector('g[data-node-id][aria-pressed="true"]')
+          if (!sel || chip.offsetParent === null) { lastId = null; return }
+          var id = sel.dataset.nodeId
+          if (id === lastId && userMoved) return
+          if (id !== lastId) userMoved = false
+          lastId = id
+          var host = chip.offsetParent
+          // on short screens keep the whole panel visible; it scrolls inside instead
+          var maxH = host.clientHeight - PAD * 2 + 'px'
+          if (chip.style.maxHeight !== maxH) { placing = true; chip.style.maxHeight = maxH; chip.style.overflowY = 'auto'; placing = false }
+          var hr = rect(host), cr = rect(chip)
+          var W = host.clientWidth, H = host.clientHeight, w = cr.width, h = cr.height
+          var node = box(rect(sel), hr.left, hr.top)
+          var near = {}
+          svg.querySelectorAll('path[marker-end][data-edge-from="' + id + '"], path[marker-end][data-edge-to="' + id + '"]').forEach(function (e) {
+            near[e.dataset.edgeFrom] = true; near[e.dataset.edgeTo] = true
+          })
+          var others = [].map.call(svg.querySelectorAll('g[data-node-id]'), function (g) {
+            return { id: g.dataset.nodeId, b: box(rect(g), hr.left, hr.top) }
+          }).filter(function (o) { return o.id !== id })
+          function clampX(x) { return Math.max(PAD, Math.min(W - w - PAD, x)) }
+          function clampY(y) { return Math.max(PAD, Math.min(H - h - PAD, y)) }
+          var xs = [PAD, W - w - PAD, node.r + GAP, node.l - w - GAP, (node.l + node.r) / 2 - w / 2].map(clampX)
+          var ys = [PAD, H - h - PAD, node.t, node.b - h, node.b + GAP, node.t - h - GAP, (node.t + node.b) / 2 - h / 2].map(clampY)
+          var cx = (node.l + node.r) / 2, cy = (node.t + node.b) / 2, best = null
+          xs.forEach(function (x) {
+            ys.forEach(function (y) {
+              var c = { l: x, t: y, r: x + w, b: y + h }
+              var score = overlap(c, node) * 1e6
+              others.forEach(function (o) { score += overlap(c, o.b) * (near[o.id] ? 40 : 4) })
+              score += Math.hypot(x + w / 2 - cx, y + h / 2 - cy)
+              if (!best || score < best.score) best = { x: x, y: y, score: score }
+            })
+          })
+          if (!best) return
+          placing = true
+          chip.style.left = Math.round(best.x) + 'px'
+          chip.style.top = Math.round(best.y) + 'px'
+          placing = false
+        }
+        var queued = false
+        function schedule() {
+          if (placing || queued) return
+          queued = true
+          requestAnimationFrame(function () { queued = false; place() })
+        }
+        new MutationObserver(schedule).observe(svg, { subtree: true, attributes: true, attributeFilter: ['aria-pressed'] })
+        new MutationObserver(schedule).observe(chip, { attributes: true, attributeFilter: ['class', 'hidden', 'aria-hidden'] })
+        // the viewer slides the diagram to frame the selected box, and the panel grows as its
+        // content fills in: re-place after either (unless the visitor dragged the panel)
+        new MutationObserver(schedule).observe(svg, { attributes: true, attributeFilter: ['style', 'transform'] })
+        if (window.ResizeObserver) new ResizeObserver(schedule).observe(chip)
+        window.addEventListener('resize', function () { lastId = null; userMoved = false; schedule() })
+        var handle = document.getElementById('btn-focus-move')
+        if (handle) {
+          handle.addEventListener('pointerdown', function () { userMoved = true })
+          handle.addEventListener('keydown', function (e) { if (/^Arrow|Home/.test(e.key)) userMoved = true })
+        }
+      })
+    })()
+
     // Opening reveal. The main path (1 to 5) builds one box at a time: each box rises into place
     // with a brief glow, then its arrow draws itself to the next box and the arrowhead and label
     // appear when the line arrives. After box 5 the remaining boxes grow outward along their own
