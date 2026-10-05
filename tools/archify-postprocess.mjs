@@ -1,7 +1,7 @@
 /**
  * Runs after Archify compiles the architecture diagram (public/architecture/index.html).
- * Archify's viewer always ships a theme toggle, a visual-style picker, an Export menu, and a node
- * index under the diagram, and it follows the visitor's system theme. For the portfolio we want one
+ * Archify's viewer always ships a theme toggle, a visual-style picker, an Export menu, a motion
+ * toggle, source badges on every box, and a node index under the diagram, and it follows the visitor's system theme. For the portfolio we want one
  * look: Classic, light, just the diagram, with no export. This injects a small override into
  * <head>. Safe to run more than once.
  *
@@ -20,11 +20,17 @@ const block = `${START}
   #btn-theme, .preset-wrap, .export-wrap { display: none !important; }
   /* just the diagram: no node index under it */
   #node-outline, #reader-rail { display: none !important; }
+  /* the trace plays once on load and settles, so no Live/Still toggle */
+  #btn-motion { display: none !important; }
+  /* source badges stay out of the first view; clicking a box still shows its verified sources */
+  .source-evidence-beacon { display: none !important; }
 </style>
 <script>
   (function () {
     var root = document.documentElement
     try { localStorage.setItem('archify-theme', 'light') } catch (e) {}
+    // the toggle is hidden, so clear any old 'still' choice and let the one-time trace play
+    try { localStorage.removeItem('archify-motion') } catch (e) {}
     function pin() {
       if (root.getAttribute('data-theme') !== 'light') root.setAttribute('data-theme', 'light')
       if (root.getAttribute('data-preset') !== 'classic') root.setAttribute('data-preset', 'classic')

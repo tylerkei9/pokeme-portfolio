@@ -11,13 +11,14 @@
       "provider": "github",
       "link_mode": "web",
       "revision": "4f9f17607245ef5fc798f001f5ecf12dcc2fc62b"
-    }
+    },
+    "animation": "trace"
   },
   "components": [
     {
       "id": "main",
       "type": "frontend",
-      "label": "Opens the site",
+      "label": "1. Opens the site",
       "sublabel": "main.tsx",
       "pos": [
         0,
@@ -38,7 +39,7 @@
     {
       "id": "app",
       "type": "frontend",
-      "label": "Sets up the page",
+      "label": "2. Sets up the page",
       "sublabel": "App.tsx (React)",
       "pos": [
         250,
@@ -60,7 +61,7 @@
     {
       "id": "engine",
       "type": "backend",
-      "label": "Runs the game",
+      "label": "3. Runs the game",
       "sublabel": "Engine",
       "pos": [
         530,
@@ -149,7 +150,7 @@
     {
       "id": "world",
       "type": "backend",
-      "label": "Builds the area",
+      "label": "4. Builds the area",
       "sublabel": "World",
       "pos": [
         800,
@@ -219,7 +220,7 @@
     {
       "id": "three",
       "type": "external",
-      "label": "Draws the screen",
+      "label": "5. Draws the screen",
       "sublabel": "Three.js (WebGL)",
       "pos": [
         530,
@@ -337,7 +338,8 @@
       "id": "render",
       "from": "engine",
       "to": "three",
-      "label": "draws every frame"
+      "label": "draws every frame",
+      "variant": "emphasis"
     },
     {
       "id": "exhibit",
