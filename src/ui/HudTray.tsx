@@ -39,7 +39,7 @@ const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable)
 
 /**
- * The portfolio menu tray: Trainer Card (résumé), Xtransceiver (Instagram phone), Skip
+ * The portfolio menu tray: Trainer Card (résumé), Xtransceiver (phone), Skip
  * Ahead. Hidden during battle (the bottom bar takes over there); dimmed and
  * inert while a dialogue box is open, matching the design system's `disabled` state.
  */
