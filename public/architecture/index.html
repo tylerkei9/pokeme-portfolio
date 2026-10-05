@@ -11,6 +11,9 @@
   .toolbar { display: none !important; }
   /* no Path, Lens, search, or zoom controls: the diagram is read, not operated */
   .diagram-nav { display: none !important; }
+  /* no "Compare system roles" lens: hide its panel, and the legend is a plain key, not a button */
+  #semantic-lens { display: none !important; }
+  svg [data-legend-kind] { pointer-events: none; cursor: default; }
   /* opening reveal: boxes rise and settle in, arrows draw themselves, labels follow */
   html.pk-reveal svg [data-node-id] {
     opacity: 0; transform: translateY(10px) scale(0.92); transform-box: fill-box; transform-origin: center;
@@ -29,17 +32,24 @@
   (function () {
     var root = document.documentElement
     try { localStorage.setItem('archify-theme', 'light') } catch (e) {}
+    // the legend stays visible as a key but can no longer be activated (it opened the lens)
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('svg [data-legend-kind]').forEach(function (g) {
+        g.removeAttribute('role'); g.removeAttribute('aria-haspopup'); g.removeAttribute('aria-controls')
+        g.removeAttribute('aria-expanded'); g.removeAttribute('aria-pressed'); g.setAttribute('tabindex', '-1')
+      })
+    })
     function pin() {
       if (root.getAttribute('data-theme') !== 'light') root.setAttribute('data-theme', 'light')
       if (root.getAttribute('data-preset') !== 'classic') root.setAttribute('data-preset', 'classic')
     }
     pin()
     new MutationObserver(pin).observe(root, { attributes: true, attributeFilter: ['data-theme', 'data-preset'] })
-    // the viewer's own shortcuts for theme (T), export (E), and presentation (F)
+    // the viewer's own shortcuts for theme (T), export (E), presentation (F), and lens (L)
     window.addEventListener('keydown', function (e) {
       var t = e.target
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
-      if (!e.metaKey && !e.ctrlKey && !e.altKey && /^[tTeEfF]$/.test(e.key)) { e.stopImmediatePropagation(); e.preventDefault() }
+      if (!e.metaKey && !e.ctrlKey && !e.altKey && /^[tTeEfFlL]$/.test(e.key)) { e.stopImmediatePropagation(); e.preventDefault() }
     }, true)
 
     // Smart placement for the details panel ("Semantic passport") that opens when a box is
