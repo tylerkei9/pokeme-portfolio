@@ -11,8 +11,7 @@
       "provider": "github",
       "link_mode": "web",
       "revision": "4f9f17607245ef5fc798f001f5ecf12dcc2fc62b"
-    },
-    "animation": "trace"
+    }
   },
   "components": [
     {

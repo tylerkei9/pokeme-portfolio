@@ -213,7 +213,7 @@ node .claude/skills/archify/bin/archify.mjs finalize architecture public/archite
 node tools/archify-postprocess.mjs
 ```
 
-The last step keeps the page in Classic light, hides the source badges until a box is clicked, and removes Archify's theme, style, export, motion, and node-index controls. The trace animation plays once when the page opens.
+The last step keeps the page in Classic light, hides the source badges until a box is clicked, and removes Archify's theme, style, export, and node-index controls.
 
 ## Credits
 
