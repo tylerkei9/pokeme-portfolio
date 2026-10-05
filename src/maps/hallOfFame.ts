@@ -14,7 +14,7 @@ const PIANO_DASHBOARD = '/piano-hand-project/index.html'
 // built with Archify from a validated JSON graph: public/architecture/pokeme-world.archify.json
 const ARCH_DIAGRAM = '/architecture/index.html'
 // Exhibits are staggered up the carpet, alternating sides, so a visitor walking in from the
-// cave passes one at a time, ending at Eli Lilly beside the kiosk:
+// cave passes one at a time, ending at Eli Lilly at the head of the hall:
 //   AAU podium (R) → Purdue Pete (L) → piano hand (R) → Rolls-Royce (L) → PokéMe (R) → Eli Lilly (L)
 const PODIUM = { x: 9, y: 18, w: 3, d: 2 }
 const PETE = { x: 2, y: 15, w: 3, d: 2 }
@@ -61,8 +61,7 @@ for (let y = 3; y < H - 2; y += 4) {
  * The Hall of Fame — the end of the journey. A grand ceremonial hall: gold diamond-mosaic
  * floor, tall stone pillars, a red carpet up the middle to an arched doorway, and Tyler's
  * exhibits staggered up the carpet (AAU podium, Purdue Pete, the piano hand, the Rolls-Royce,
- * the PokéMe console, Eli Lilly), each opening as you step beside it, and a contact kiosk
- * at the head of the hall.
+ * the PokéMe console, Eli Lilly), each opening as you step beside it.
  */
 export const hallOfFame: MapDef = {
   id: 'hallOfFame',
@@ -77,7 +76,6 @@ export const hallOfFame: MapDef = {
   ]),
   props: [
     ...props,
-    { kind: 'kiosk', x: 6, y: 1, w: 2 },
   ],
   warps: [
     { x: 6, y: H, to: 'lugiaCave', tx: 10, ty: 17, dir: 'down' },

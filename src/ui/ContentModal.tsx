@@ -316,7 +316,21 @@ function DashboardViewer({ url, onClose }: { url: string; onClose: () => void })
             )}
           </div>
         )}
-        <iframe src={url} title="Project dashboard" className="flex-1 w-full rounded bg-white" />
+        <iframe
+          src={url}
+          title="Project dashboard"
+          className="flex-1 w-full rounded bg-white"
+          onLoad={(e) => {
+            // Once a visitor clicks into a dashboard it has the keyboard, so the game never sees
+            // Escape. The dashboards are served from this same site, so listen inside them too,
+            // unless the dashboard used Escape itself (e.g. to close one of its own panels).
+            try {
+              e.currentTarget.contentWindow?.addEventListener('keydown', (k) => {
+                if (k.key === 'Escape' && !k.defaultPrevented) close()
+              })
+            } catch { /* a dashboard on another site can't be listened to; the Close button still works */ }
+          }}
+        />
         <div className="flex items-center justify-between mt-2 px-1">
           <a href={url} target="_blank" rel="noopener noreferrer" className="font-pixel text-xs text-blue-400 hover:text-blue-300 underline">
             Open in new tab
