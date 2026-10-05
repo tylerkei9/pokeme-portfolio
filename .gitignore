@@ -14,3 +14,7 @@ assets-src/IMG_*.jpg
 /piano-hand-project/
 /legacy/
 Pokémon Portfolio — Revised Codex Prompt.md
+
+# Archify working folders (receipts, browser evidence) and skill install lock
+.archify/
+skills-lock.json

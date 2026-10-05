@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "PokéMe: from map data to the world you walk through",
+    "output": ".archify/architecture-pokeme-world-20261005-005617/pokeme-world.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/tylerkei9/pokeme-portfolio.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "4f9f17607245ef5fc798f001f5ecf12dcc2fc62b"
+    }
+  },
+  "components": [
+    {
+      "id": "main",
+      "type": "frontend",
+      "label": "main.tsx",
+      "sublabel": "page entry point",
+      "pos": [
+        40,
+        200
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/main.tsx",
+          "line": 6,
+          "label": "mounts React"
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "App.tsx",
+      "sublabel": "React shell",
+      "pos": [
+        250,
+        200
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/ui/App.tsx",
+          "line": 62,
+          "end_line": 80,
+          "label": "starts the Engine"
+        }
+      ]
+    },
+    {
+      "id": "engine",
+      "type": "backend",
+      "label": "Engine",
+      "sublabel": "game loop + input",
+      "pos": [
+        530,
+        200
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/engine/engine.ts",
+          "line": 143,
+          "end_line": 159,
+          "label": "start()"
+        },
+        {
+          "path": "src/engine/engine.ts",
+          "line": 433,
+          "end_line": 442,
+          "label": "frame loop"
+        },
+        {
+          "path": "src/engine/engine.ts",
+          "line": 481,
+          "end_line": 486,
+          "label": "walk-in triggers"
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "type": "cloud",
+      "label": "loadAssets",
+      "sublabel": "sprites + fonts",
+      "pos": [
+        470,
+        40
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/engine/assets.ts",
+          "line": 73,
+          "end_line": 100,
+          "label": "parallel downloads"
+        }
+      ]
+    },
+    {
+      "id": "maps",
+      "type": "database",
+      "label": "MAPS",
+      "sublabel": "12 area data files",
+      "pos": [
+        800,
+        40
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/maps/index.ts",
+          "line": 15,
+          "end_line": 28,
+          "label": "area table"
+        },
+        {
+          "path": "src/maps/types.ts",
+          "line": 106,
+          "label": "triggers field"
+        },
+        {
+          "path": "src/maps/hallOfFame.ts",
+          "line": 36,
+          "end_line": 53,
+          "label": "Hall of Fame exhibits"
+        }
+      ]
+    },
+    {
+      "id": "world",
+      "type": "backend",
+      "label": "World",
+      "sublabel": "data to 3D scene",
+      "pos": [
+        800,
+        200
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/engine/world.ts",
+          "line": 24,
+          "end_line": 50,
+          "label": "builds the scene"
+        }
+      ]
+    },
+    {
+      "id": "ground",
+      "type": "backend",
+      "label": "paintGround",
+      "sublabel": "pixel-art terrain",
+      "pos": [
+        805,
+        360
+      ],
+      "size": [
+        140,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/engine/ground.ts",
+          "line": 43,
+          "label": "paints ground letters"
+        }
+      ]
+    },
+    {
+      "id": "props",
+      "type": "backend",
+      "label": "buildProp",
+      "sublabel": "53 object builders",
+      "pos": [
+        1060,
+        200
+      ],
+      "size": [
+        140,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/engine/props.ts",
+          "line": 3142,
+          "end_line": 3150,
+          "label": "buildProp"
+        },
+        {
+          "path": "src/engine/props.ts",
+          "line": 3085,
+          "label": "BUILDERS table"
+        }
+      ]
+    },
+    {
+      "id": "three",
+      "type": "external",
+      "label": "Three.js",
+      "sublabel": "WebGL renderer",
+      "pos": [
+        530,
+        360
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/engine/engine.ts",
+          "line": 117,
+          "label": "WebGLRenderer"
+        },
+        {
+          "path": "src/engine/engine.ts",
+          "line": 439,
+          "label": "render each frame"
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "type": "messagebus",
+      "label": "useGameState",
+      "sublabel": "Zustand store",
+      "pos": [
+        250,
+        360
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/systems/GameState.ts",
+          "line": 61,
+          "end_line": 80,
+          "label": "openContent"
+        }
+      ]
+    },
+    {
+      "id": "modal",
+      "type": "frontend",
+      "label": "ContentModal",
+      "sublabel": "exhibit windows",
+      "pos": [
+        250,
+        520
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/ui/ContentModal.tsx",
+          "line": 37,
+          "end_line": 38,
+          "label": "reads activeContentId"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "mount",
+      "from": "main",
+      "to": "app",
+      "label": "mounts",
+      "variant": "emphasis"
+    },
+    {
+      "id": "boot",
+      "from": "app",
+      "to": "engine",
+      "label": "new Engine + start()",
+      "variant": "emphasis"
+    },
+    {
+      "id": "load-assets",
+      "from": "engine",
+      "to": "assets",
+      "label": "loadAssets()"
+    },
+    {
+      "id": "read-area",
+      "from": "engine",
+      "to": "maps",
+      "label": "MAPS[mapId]"
+    },
+    {
+      "id": "build-world",
+      "from": "engine",
+      "to": "world",
+      "label": "new World(def)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "paint",
+      "from": "world",
+      "to": "ground",
+      "label": "paintGround(def)"
+    },
+    {
+      "id": "build",
+      "from": "world",
+      "to": "props",
+      "label": "buildProp(p)"
+    },
+    {
+      "id": "render",
+      "from": "engine",
+      "to": "three",
+      "label": "render() per frame"
+    },
+    {
+      "id": "exhibit",
+      "from": "engine",
+      "to": "state",
+      "label": "openContent hook",
+      "variant": "dashed"
+    },
+    {
+      "id": "show",
+      "from": "state",
+      "to": "modal",
+      "label": "activeContentId"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Loading an area",
+      "items": [
+        "Engine.start() loads sprites and fonts in parallel",
+        "MAPS holds each area as plain data: ground letters, objects, exits, triggers",
+        "World paints the ground and builds every object in code"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Every frame",
+      "items": [
+        "requestAnimationFrame drives the loop",
+        "Three.js draws the scene with WebGL"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Walking up to an exhibit",
+      "items": [
+        "A walk-in trigger runs the exhibit's script",
+        "The script calls the openContent hook set by App",
+        "The Zustand store change opens ContentModal"
+      ]
+    }
+  ]
+}

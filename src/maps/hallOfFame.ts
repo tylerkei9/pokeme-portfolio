@@ -11,6 +11,8 @@ const H = 24
 // Project exhibits: each opens that project's dashboard full-screen.
 const RR_DASHBOARD = '/rolls%20royce%20data%20synthesizer%20project/index.html'
 const PIANO_DASHBOARD = '/piano-hand-project/index.html'
+// built with Archify from a validated JSON graph: public/architecture/pokeme-world.archify.json
+const ARCH_DIAGRAM = '/architecture/index.html'
 // Exhibits are staggered up the carpet, alternating sides, so a visitor walking in from the
 // cave passes one at a time, ending at Eli Lilly beside the kiosk:
 //   AAU podium (R) → Purdue Pete (L) → piano hand (R) → Rolls-Royce (L) → PokéMe (R) → Eli Lilly (L)
@@ -38,7 +40,7 @@ const EXHIBITS: { at: typeof CAR; open: (ctx: ScriptContext) => Promise<void> }[
   { at: PETE, open: (ctx) => ctx.openContent('photo:/material/halloffame/purdue-graduation.jpg') },
   { at: PIANO, open: (ctx) => ctx.openContent(`dashboard:${PIANO_DASHBOARD}`) },
   { at: CAR, open: (ctx) => ctx.openContent(`dashboard:${RR_DASHBOARD}`) },
-  { at: DS, open: (ctx) => ctx.openContent('exhibit:pokeme') },
+  { at: DS, open: (ctx) => ctx.openContent(`dashboard:${ARCH_DIAGRAM}`) },
   { at: LILLY, open: (ctx) => ctx.openContent('exhibit:lilly') },
 ]
 

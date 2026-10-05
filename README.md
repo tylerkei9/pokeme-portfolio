@@ -70,7 +70,7 @@ Walk up the red carpet. Each exhibit opens on its own when you step right beside
 | Purdue Pete statue | My college graduation photo |
 | Robotic hands at a piano | The **Piano Hand Algorithms** interactive dashboard |
 | Rolls-Royce on a turntable | The **Rolls-Royce Data Synthesizer** interactive dashboard |
-| Giant handheld console | "How I built this": how this website was made |
+| Giant handheld console | An interactive architecture diagram of how this website works |
 | Eli Lilly console | My work as an AI Fellow at Eli Lilly |
 
 ---
@@ -86,7 +86,7 @@ the game's code.
 | My headshot | Replace `public/material/about/headshot.webp` |
 | The scrolling photos in my profile, and their captions | Photos in `public/material/about/`, captions at the top of `src/ui/AboutScreen.tsx` (the `PHOTOS` list) |
 | The text in my profile | The `PAGES` list near the top of `src/ui/AboutScreen.tsx` |
-| The Hall of Fame cards (Eli Lilly, "How I built this") | `src/data/exhibits.ts` |
+| The Eli Lilly card in the Hall of Fame | `src/data/exhibits.ts` |
 | The Hall of Fame photos | `public/material/halloffame/` |
 | My email, LinkedIn, and GitHub links | The `contact` entry in `src/data/content.json` |
 | The volleyball highlight videos | `public/videos/`, listed in the `highlights` entry of `src/data/content.json` |
@@ -200,6 +200,17 @@ assets-src/ original sprite sheets the game sprites were cut from
 | `npm run dev` | Run locally with live reload |
 | `npm run build` | Type-check and build the production site into `dist/` |
 | `npm run preview` | Serve the built `dist/` folder locally |
+
+**The architecture diagram** (opened by the handheld console in the Hall of Fame) is built with
+[Archify](https://github.com/tt-a1i/archify). Its source is a typed JSON graph,
+`public/architecture/pokeme-world.archify.json`. Every box cites the exact file and lines it
+describes, pinned to a commit, and Archify validates the graph before compiling it into
+`public/architecture/index.html`. To change it, edit the JSON and rebuild:
+
+```
+npx skills add tt-a1i/archify --skill archify --agent claude-code --copy --yes
+node .claude/skills/archify/bin/archify.mjs finalize architecture public/architecture/pokeme-world.archify.json public/architecture/index.html --repo-root . --quality showcase
+```
 
 ## Credits
 
