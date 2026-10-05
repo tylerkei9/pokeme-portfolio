@@ -71,7 +71,7 @@ Walk up the red carpet. Each exhibit opens on its own when you step right beside
 | Robotic hands at a piano | The **Piano Hand Algorithms** interactive dashboard |
 | Rolls-Royce on a turntable | The **Rolls-Royce Data Synthesizer** interactive dashboard |
 | Giant handheld console | An interactive architecture diagram of how this website works |
-| Eli Lilly console | My work as an AI Fellow at Eli Lilly |
+| Eli Lilly console | A display of my AI Fellow role (nothing opens) |
 
 ---
 
@@ -86,7 +86,6 @@ the game's code.
 | My headshot | Replace `public/material/about/headshot.webp` |
 | The scrolling photos in my profile, and their captions | Photos in `public/material/about/`, captions at the top of `src/ui/AboutScreen.tsx` (the `PHOTOS` list) |
 | The text in my profile | The `PAGES` list near the top of `src/ui/AboutScreen.tsx` |
-| The Eli Lilly card in the Hall of Fame | `src/data/exhibits.ts` |
 | The Hall of Fame photos | `public/material/halloffame/` |
 | My email, LinkedIn, and GitHub links | The `contact` entry in `src/data/content.json` |
 | The volleyball highlight videos | `public/videos/`, listed in the `highlights` entry of `src/data/content.json` |

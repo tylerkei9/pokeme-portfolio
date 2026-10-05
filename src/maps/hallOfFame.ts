@@ -28,7 +28,7 @@ const footprint = (r: { x: number; y: number; w: number; d: number }) =>
 const props: Prop[] = [
   { kind: 'aauPodium', ...PODIUM },
   { kind: 'purduePete', ...PETE },
-  // swap 'agentGraph' for 'lillyLogo' to show the plain logo statue instead (and drop its exhibit below)
+  // decorative: no card opens here (swap 'agentGraph' for 'lillyLogo' for the plain logo statue)
   { kind: 'agentGraph', ...LILLY },
   { kind: 'pianoHand', ...PIANO },
   { kind: 'rollsRoyce', ...CAR },
@@ -41,7 +41,6 @@ const EXHIBITS: { at: typeof CAR; open: (ctx: ScriptContext) => Promise<void> }[
   { at: PIANO, open: (ctx) => ctx.openContent(`dashboard:${PIANO_DASHBOARD}`) },
   { at: CAR, open: (ctx) => ctx.openContent(`dashboard:${RR_DASHBOARD}`) },
   { at: DS, open: (ctx) => ctx.openContent(`dashboard:${ARCH_DIAGRAM}`) },
-  { at: LILLY, open: (ctx) => ctx.openContent('exhibit:lilly') },
 ]
 
 // Each exhibit opens on its own when you step onto a tile right beside it (the ring of tiles
