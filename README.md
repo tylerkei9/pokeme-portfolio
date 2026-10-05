@@ -210,7 +210,10 @@ describes, pinned to a commit, and Archify validates the graph before compiling 
 ```
 npx skills add tt-a1i/archify --skill archify --agent claude-code --copy --yes
 node .claude/skills/archify/bin/archify.mjs finalize architecture public/architecture/pokeme-world.archify.json public/architecture/index.html --repo-root . --quality showcase
+node tools/archify-postprocess.mjs
 ```
+
+The last step keeps the page in Classic light and removes Archify's theme, style, export, and node-index panels.
 
 ## Credits
 

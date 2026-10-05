@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "What happens when you open my site?",
+    "title": "PokéMe Architecture",
     "output": "public/architecture/index.html",
     "locale": "en",
     "quality_profile": "showcase",
@@ -11,8 +11,7 @@
       "provider": "github",
       "link_mode": "web",
       "revision": "4f9f17607245ef5fc798f001f5ecf12dcc2fc62b"
-    },
-    "subtitle": "I wrote this game engine myself: 12 areas built from plain data files, with no 3D models."
+    }
   },
   "components": [
     {
@@ -352,32 +351,6 @@
       "from": "state",
       "to": "modal",
       "label": "opens it"
-    }
-  ],
-  "cards": [
-    {
-      "dot": "cyan",
-      "title": "Easy to grow",
-      "items": [
-        "Adding a new area means editing a data file, not the engine",
-        "Each exhibit is listed in data too, along with what it opens"
-      ]
-    },
-    {
-      "dot": "emerald",
-      "title": "Light and fast",
-      "items": [
-        "No 3D model files: every building and object is drawn by code",
-        "The whole game downloads in about 240 KB of code"
-      ]
-    },
-    {
-      "dot": "rose",
-      "title": "Cleanly separated",
-      "items": [
-        "The game asks for pop-up windows through one shared memory",
-        "So the windows can be redesigned without touching the game engine"
-      ]
     }
   ]
 }

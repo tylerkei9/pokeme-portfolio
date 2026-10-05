@@ -285,7 +285,7 @@ export function AboutScreen({ onContinue, onResume, onProjects }: { onContinue: 
                           className="h-[100px] w-auto rounded-md border-2 border-black bg-white shadow-[0_2px_0_#000] transition-transform duration-200 hover:-translate-y-0.5"
                         />
                       </button>
-                      <figcaption className="mt-0.5 text-xs leading-4 text-black/75">{p.caption}</figcaption>
+                      <figcaption className="mt-0.5 w-0 min-w-full text-xs leading-4 text-black/75">{p.caption}</figcaption>
                     </figure>
                   ))}
                 </div>
