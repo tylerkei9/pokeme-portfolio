@@ -147,3 +147,8 @@ html, body {
 .win-btn { font-family: 'Press Start 2P', monospace; font-size: 11px; letter-spacing: .02em; white-space: nowrap; }
 .win-dark { color: #111; text-shadow: none; }
 .win-dark svg { filter: none; }
+
+/* Music widget: the little animated "now playing" bars on its icon. */
+.eq-bar { display: block; width: 3px; height: 100%; border-radius: 1px; background: #8fd18f; transform-origin: bottom; animation: eq 0.9s ease-in-out infinite; }
+@keyframes eq { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .eq-bar { animation: none; transform: scaleY(0.7); } }

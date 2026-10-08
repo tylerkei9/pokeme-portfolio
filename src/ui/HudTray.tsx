@@ -43,7 +43,7 @@ const LAYOUT = {
 
 /** Touch: bottom-left, directly above the floating D-pad. */
 const STACK_WRAP =
-  'fixed left-[max(6px,calc(env(safe-area-inset-left)-48px))] bottom-[calc(max(2px,env(safe-area-inset-bottom)-16px)+136px)] z-40 flex flex-col items-start gap-2'
+  'fixed left-[max(16px,calc(env(safe-area-inset-left)-38px))] bottom-[calc(max(2px,env(safe-area-inset-bottom)-16px)+136px)] z-40 flex flex-col items-start gap-2'
 
 const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable)

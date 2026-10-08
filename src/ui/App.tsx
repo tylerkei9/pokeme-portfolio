@@ -162,11 +162,6 @@ export function App() {
     engineRef.current = null
   }, [])
 
-  // Pop the music player open the moment it's unlocked, like a reward notification.
-  useEffect(() => {
-    if (musicUnlocked) setSpotifyOpen(true)
-  }, [musicUnlocked])
-
   const onTaskbarAction = (a: TaskbarAction) => {
     const s = useGameState.getState()
     if (showAbout || resumeOpen || s.activeContentId || s.phoneOpen) return
@@ -260,7 +255,7 @@ export function App() {
       <ContentModal />
       <ResumeViewer open={resumeOpen} onClose={() => setResumeOpen(false)} />
       <PhoneOverlay onOpenSpotify={() => setSpotifyOpen(true)} />
-      {musicUnlocked && <SpotifyPlayer open={spotifyOpen} onClose={() => setSpotifyOpen(false)} />}
+      {musicUnlocked && <SpotifyPlayer open={spotifyOpen} covered={paused} onToggle={() => setSpotifyOpen((o) => !o)} />}
     </div>
   )
 }

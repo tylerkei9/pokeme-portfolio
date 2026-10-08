@@ -134,8 +134,8 @@ function ABButtons() {
  * in the bottom-left corner and A/B in the bottom-right (landscape).
  */
 export function TouchControls() {
-  const padL = 'max(0px, calc(env(safe-area-inset-left) - 56px))'
-  const padR = 'max(0px, calc(env(safe-area-inset-right) - 56px))'
+  const padL = 'max(10px, calc(env(safe-area-inset-left) - 46px))'
+  const padR = 'max(10px, calc(env(safe-area-inset-right) - 46px))'
   const padB = 'max(2px, calc(env(safe-area-inset-bottom) - 16px))'
   return (
     <div

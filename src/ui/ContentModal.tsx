@@ -109,7 +109,7 @@ export function ContentModal() {
     >
       <CloseX onClick={closeContent} />
       <div
-        className={`bg-gray-900 border-2 border-gray-600 rounded-lg p-4 sm:p-6 w-full overflow-y-auto overscroll-contain modal-body max-h-full ${
+        className={`bg-gray-900 border-2 border-gray-600 rounded-lg p-4 sm:p-6 w-full overflow-y-auto overscroll-contain modal-body max-h-full short:p-2 ${content?.type === 'video' ? 'short:!mt-2 short:!max-h-[calc(100%-8px)] ' : ''}${
           content?.type === 'video' ? 'max-w-6xl' : content?.type === 'resume' || content?.type === 'projects' ? 'max-w-2xl' : 'max-w-lg'
         }`}
         style={{ WebkitOverflowScrolling: 'touch', marginTop: 56, maxHeight: 'calc(100% - 56px)' }}
@@ -144,7 +144,7 @@ export function ContentModal() {
 
         <button
           onClick={closeContent}
-          className="win-btn mt-2 self-center"
+          className={`win-btn mt-2 self-center ${content?.type === 'video' ? 'short:hidden' : ''}`}
         >
           Close
         </button>
@@ -285,34 +285,19 @@ function VideoContent({ data }: { data: any }) {
   const clip = clips[i]
   if (!clip) return null
 
+  // The reel plays on its own: when a clip ends the next one starts, looping back to the first.
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 short:space-y-1">
       <video
         key={clip.src}
         src={clip.src}
         controls
         autoPlay
         playsInline
-        className="w-full max-h-[70dvh] object-contain rounded bg-black mx-auto"
+        loop={clips.length === 1}
+        onEnded={() => setI((n) => (n + 1) % clips.length)}
+        className="mx-auto w-full max-h-[70dvh] rounded bg-black object-contain short:max-h-[calc(100dvh-64px)]"
       />
-      <p className="font-pixel text-xs text-gray-400 text-center">{clip.caption}</p>
-      {clips.length > 1 && (
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onClick={() => setI((n) => (n - 1 + clips.length) % clips.length)}
-            className="win-btn"
-          >
-            ← Prev
-          </button>
-          <span className="font-pixel text-[10px] text-gray-500">{i + 1} / {clips.length}</span>
-          <button
-            onClick={() => setI((n) => (n + 1) % clips.length)}
-            className="win-btn"
-          >
-            Next →
-          </button>
-        </div>
-      )}
     </div>
   )
 }
