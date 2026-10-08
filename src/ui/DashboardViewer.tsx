@@ -17,6 +17,9 @@ const isPhoneLayout = () =>
  */
 const DASH_W = 920
 
+/** Background shown while a dashboard loads, so it matches the page and nothing flashes white (the Rolls-Royce page is dark). */
+const frameBg = (url: string) => (url.includes('rolls') ? '#0d0f13' : '#ffffff')
+
 /**
  * Phone layout (landscape): the dashboard is laid out at DASH_W and shrunk to the window's width.
  * Its height is the window's height at that scale, so the page scrolls natively up and down inside
@@ -35,18 +38,19 @@ function PannableFrame({ url, onEscape }: { url: string; onEscape: () => void })
   }, [])
   const scale = dim.w > 0 && dim.w < DASH_W ? dim.w / DASH_W : 1
   return (
-    <div ref={box} className="relative min-h-0 flex-1 overflow-hidden rounded bg-white">
+    <div ref={box} className="relative min-h-0 flex-1 overflow-hidden rounded" style={{ background: frameBg(url) }}>
       {dim.w > 0 && (
         <iframe
           src={url}
           title="Project dashboard"
-          className="block border-0 bg-white"
+          className="block border-0"
           style={{
             width: scale < 1 ? DASH_W : '100%',
             height: dim.h / scale,
             transform: scale < 1 ? `scale(${scale})` : undefined,
             transformOrigin: '0 0',
             touchAction: 'auto',
+            background: frameBg(url),
           }}
           onLoad={(e) => {
             try {
@@ -159,7 +163,7 @@ export function DashboardViewer({ url, onClose }: { url: string; onClose: () => 
           <iframe
             src={url}
             title="Project dashboard"
-            className="min-h-0 flex-1 w-full rounded bg-white" style={{ touchAction: 'auto' }}
+            className="min-h-0 flex-1 w-full rounded" style={{ touchAction: 'auto', background: frameBg(url) }}
             onLoad={(e) => {
               // Once a visitor clicks into a dashboard it has the keyboard, so the game never sees
               // Escape. The dashboards are served from this same site, so listen inside them too,
