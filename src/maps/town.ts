@@ -12,7 +12,7 @@ const COURT = { x: 31, y: 27, w: 10, h: 5 }
 /**
  * New Hyde Park — the starting town: Tyler's childhood home, New Hyde Park Memorial High
  * School, his elementary school (Hillside Grade School), and Memorial Park's basketball
- * court, plus Ward's candy store at the end of Bobb Howard's garage. Three bands — home/
+ * court, plus Bob Howard's candy shop at the end of Bob Howard's garage. Three bands — home/
  * high school up north, the candy store mid-town, grade school/park down south — with wide
  * grass and road gaps between everything so the town doesn't feel packed.
  */
@@ -41,7 +41,7 @@ export const town: MapDef = {
     ['f', SPINE + 2, 8, 2, 2],
     // Memorial Park basketball court
     ['j', COURT.x, COURT.y, COURT.w, COURT.h],
-    // Ward's candy store / Bobb Howard's: sidewalk and garage apron out to the main road
+    // Bob Howard's candy shop / Bob Howard's: sidewalk and garage apron out to the main road
     ['s', SPINE + 2, 22, 7, 1],
     ['p', SPINE + 9, 22, 8, 1],
     ['p', SPINE + 2, 23, 15, 1],
@@ -49,8 +49,8 @@ export const town: MapDef = {
   // walking up to one of these flashes its name in the top-left location banner
   areas: [
     { x: 29, y: 6, w: 15, h: 8, name: 'NHP Memorial' },
-    { x: 29, y: 18, w: 5, h: 6, name: "Ward's Candy Store" },
-    { x: 34, y: 18, w: 9, h: 6, name: "Bobb Howard's Service Station" },
+    { x: 29, y: 18, w: 5, h: 6, name: "Bob Howard's Candy Shop" },
+    { x: 34, y: 18, w: 9, h: 6, name: "Bob Howard's Service Station" },
     { x: 7, y: 26, w: 13, h: 8, name: 'HGS' },
     { x: 30, y: 26, w: 12, h: 7, name: 'Memorial Park' },
   ],
@@ -60,7 +60,7 @@ export const town: MapDef = {
     { kind: 'mailbox', x: 15, y: 11 },
     { kind: 'school', x: 30, y: 7, w: 13, d: 5, opts: { doorCol: 6 } },
     { kind: 'gradeschool', x: 8, y: 27, w: 11, d: 5, opts: { doorCol: 5 } },
-    // Ward's candy store at the end of Bobb Howard's service station — Tyler's after-school stop
+    // Bob Howard's candy shop at the end of Bob Howard's service station — Tyler's after-school stop
     { kind: 'candyShop', x: SPINE + 5, y: 19, w: 12, d: 3, opts: { shopW: 4 } },
     { kind: 'hoop', x: COURT.x + 4, y: COURT.y, opts: { rotation: 0 } },
   ],

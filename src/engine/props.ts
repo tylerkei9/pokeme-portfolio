@@ -1315,7 +1315,7 @@ function buildTurnersHall(p: Prop, assets: Assets) {
   return group
 }
 
-// ── Ward's candy store + Bobb Howard's service station (New Hyde Park) ──
+// ── Bob Howard's candy shop + Bob Howard's service station (New Hyde Park) ──
 
 /** Flat sign plane with pixel-font lettering (optionally on a coloured board). `ppu` is
  *  texture pixels per world unit — higher reads smaller. Lines are centred. */
@@ -1350,11 +1350,11 @@ function lollipopTexture() {
 }
 
 /**
- * The corner of Tyler's after-school candy run: Ward's General Store ("OLD CANDY/TOYS"),
- * tucked into the end of Bobb Howard's service station. One red-brick building under a
+ * The corner of Tyler's after-school candy run: Bob Howard's Candy Shop ("OLD CANDY/TOYS"),
+ * tucked into the end of Bob Howard's service station. One red-brick building under a
  * white overhang — the candy store on the left with its sign boards, glass door, a display
  * window crammed with toys and a giant swirl lollipop out front; three garage bays on the
- * right under "BOBB HOWARDS", flanked by EMISSIONS and DIAGNOSTICS signs, cars inside.
+ * right under "BOB HOWARDS", flanked by EMISSIONS and DIAGNOSTICS signs, cars inside.
  * Original geometry and pixel painting, laid out after Tyler's photos.
  */
 function buildCandyShop(p: Prop, assets: Assets) {
