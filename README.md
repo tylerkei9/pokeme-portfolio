@@ -14,22 +14,25 @@ with buttons for my résumé, the Hall of Fame, LinkedIn, and GitHub.
 
 ## Contents
 
-1. [How to play](#how-to-play)
+1. [How to play](#how-to-play) (computer and phone)
 2. [The journey](#the-journey)
 3. [The Hall of Fame](#the-hall-of-fame)
-4. [Changing the content](#changing-the-content)
-5. [Running it on your own computer](#running-it-on-your-own-computer)
-6. [Putting it online](#putting-it-online)
-7. [Common questions](#common-questions)
-8. [What these words mean](#what-these-words-mean)
-9. [How it's built](#how-its-built)
-10. [Credits](#credits)
+4. [What's new](#whats-new)
+5. [Changing the content](#changing-the-content)
+6. [Running it on your own computer](#running-it-on-your-own-computer)
+7. [Putting it online](#putting-it-online)
+8. [Common questions](#common-questions)
+9. [What these words mean](#what-these-words-mean)
+10. [How it's built](#how-its-built)
+11. [Credits](#credits)
 
 ---
 
 ## How to play
 
-The site is made for a computer with a keyboard (it isn't designed for phones).
+The site works on a computer and on a phone. The game, windows, and content are the same on both.
+
+### On a computer
 
 | Key | What it does |
 |---|---|
@@ -42,7 +45,51 @@ The site is made for a computer with a keyboard (it isn't designed for phones).
 | **F** | Skip straight to the Hall of Fame |
 | **Esc** | Close a window |
 
-The same shortcuts appear as buttons in the small menu in the bottom-left corner.
+The same shortcuts appear as buttons in the small menu in the bottom-left corner. You can also
+**click** the map to walk there, and click a person, sign, or exhibit to walk up and use it.
+
+### On a phone
+
+Turn the phone sideways. In portrait the game asks you to rotate (on iPhone, switch off
+rotation lock). Everything can be done by touch:
+
+```
+ ┌──────────────────────────────────────────────────────────┐
+ │  (menu)                                      (music)     │
+ │   ≡                                            ♪         │
+ │  ┌───┐                                                   │
+ │  │ ▲ │          the game fills the screen       ( A )    │
+ │ ◄│   │►                                      ( B )       │
+ │  │ ▼ │                                                   │
+ │  └───┘                                                   │
+ └──────────────────────────────────────────────────────────┘
+   D-pad                                          A and B
+```
+
+| Do this | To |
+|---|---|
+| **Tap** the ground | Walk there |
+| **Tap** a person, sign, door, or exhibit | Walk up to it and use it |
+| **Drag** on the map | Walk in that direction (a long drag runs) |
+| **D-pad**, **A**, **B** | Walk, talk or continue, and run (hold B) |
+| **Tap** the text box | Continue the text |
+| **Tap** YES or NO | Answer a question |
+| **Tap** a battle button | Fight (the on-screen controls hide during battles) |
+| **≡ menu** | Résumé, Trainer Profile, phone, and skip to the Hall of Fame |
+| **♪ icon** | Open or fold the music player |
+
+```mermaid
+flowchart LR
+    A[Touch the screen] --> B{How?}
+    B -->|Tap| C[Walk there or use it]
+    B -->|Drag| D[Walk or run]
+    B -->|On-screen pad| E[D-pad, A, B]
+    B -->|Menu or icons| F[Résumé, profile, music]
+```
+
+Windows are made for a sideways screen. The résumé and project windows split into pages you
+swipe through, the three dashboards open at full width and scroll up and down, and every window
+has a small ✕ in the corner. The menu and the music player fold away when you touch anything else.
 
 ## The journey
 
@@ -50,12 +97,12 @@ Each area is a real place that matters to me. Walking north takes you from one t
 
 | # | Area | What's there |
 |---|---|---|
-| 1 | **New Hyde Park** | My hometown: my house (with my bedroom upstairs), NHP Memorial, my elementary school (HGS), and the Memorial Park court |
+| 1 | **New Hyde Park** | My hometown: my house (with my bedroom upstairs), NHP Memorial, my elementary school (HGS), the Memorial Park court, and Bob Howard's Candy Shop |
 | 2 | **Oakland Gardens** | A quiet garden path past apartment blocks |
 | 3 | **Hidden Grove** | A cherry-blossom grove where the first legendary Pokémon, **Latias**, appears. Beating it unlocks the music player |
 | 4 | **Main Street Flushing** | A busy Queens street of storefronts, signs, a city bus, and crosswalks |
 | 5 | **The Throgs Neck Crossing** | A bridge, named for the drive to every volleyball practice |
-| 6 | **American Turners** | My volleyball club. The TV in the gym plays my highlight videos |
+| 6 | **American Turners** | My volleyball club. The TV in the gym plays my highlight videos on a loop |
 | 7 | **Purdue University** | Campus, with the Bell Tower and Lawson, the computer science building |
 | 8 | **Whirlpool Cave** | Home of the second legendary, **Lugia**. Beating it opens a portal |
 | 9 | **Hall of Fame** | The end of the journey: my projects and milestones (below) |
@@ -72,6 +119,21 @@ Walk up the red carpet. Each exhibit opens on its own when you step right beside
 | Rolls-Royce on a turntable | The **Rolls-Royce Data Synthesizer** interactive dashboard |
 | Giant handheld console | An interactive architecture diagram of how this website works |
 | Eli Lilly console | A display of my AI Fellow role (nothing opens) |
+
+---
+
+## What's new
+
+| Feature | Computer | Phone |
+|---|---|---|
+| Sideways phone layout, on-screen pad, tap and drag controls | Not needed | New |
+| Click to walk and use things | New | Tap |
+| Music player | Small ♪ icon that opens a compact player and folds when you click elsewhere | Same |
+| Highlights TV | Clips play one after another in a loop, with no buttons | Same |
+| Dashboards | Unchanged full-size window | Laid out at desktop width and scaled to fit, with tap-to-show hints and bigger tap targets |
+| Windows | Small ✕ in the corner, no button backgrounds | Same, with swipe pages for the résumé and projects |
+| Trainer Profile | Unchanged | Same layout as the computer, scaled down; swipe the text box to change page |
+| Bob Howard's Candy Shop | Added to New Hyde Park | Same |
 
 ---
 
@@ -139,9 +201,12 @@ Replace `public/resume.pdf` with the new file (same name), then save the change 
 github.com you can do this without any tools: open the `public` folder, choose **Add file → Upload
 files**, drop in the new `resume.pdf`, and click **Commit changes**. Vercel republishes the site by itself.
 
-**Why doesn't the game work on my phone?**
-It's designed for a computer keyboard. On a phone the Trainer Profile still shows, with buttons for the
-résumé, LinkedIn, and GitHub.
+**Does it work on my phone?**
+Yes, in landscape. Rotate the phone and play with the on-screen pad, by tapping, or by dragging. See
+[On a phone](#on-a-phone).
+
+**Why does the music icon disappear?**
+It hides while a window is open so it doesn't sit on the window's ✕. The music keeps playing.
 
 **Something looks broken after a change. How do I undo it?**
 On GitHub, every saved change is kept in the history (the **Commits** list). In Vercel, open the
@@ -178,6 +243,9 @@ This section is for engineers.
   Canvas 2D API at runtime (25 terrain types, 53 prop types), so there are no 3D model files.
 - **Data-driven maps:** each area is a typed data file (ground grid, props, warps, walk-in
   triggers). Cutscenes and interactions are `async`/`await` scripts.
+- **Phone input:** the on-screen pad sends the same key events as the keyboard, so every menu and
+  battle works unchanged. Taps and drags go through `Engine.tap` and `Engine.swipe`, and the game
+  stops drawing while a window covers it.
 - **Interface:** **React** and **Zustand** for the profile, résumé viewer, exhibit windows, and
   battle menus, styled with **Tailwind CSS** and bundled with **Vite**. The game code is about
   240 KB gzipped.
