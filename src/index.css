@@ -9,6 +9,8 @@
 }
 
 html, body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
   width: 100%;
   height: 100%;
   background: #000;
@@ -111,3 +113,37 @@ html, body {
   .about-glow, .about-portrait { transform: none; transition: none; }
 }
 
+
+/* Touch: text-link buttons (Close, Prev, Next, Download) get a finger-sized hit area. */
+.tap-btn { white-space: nowrap; display: inline-flex; align-items: center; }
+@media (pointer: coarse) {
+  .tap-btn { min-height: 44px; min-width: 44px; padding: 0 8px; justify-content: center; }
+}
+.touch-only { display: none; }
+@media (pointer: coarse) { .touch-only { display: inline-flex; } }
+
+/* Phones: slightly smaller pixel-font body text in the content windows, so there's less scrolling. */
+@media (max-width: 640px) {
+  .modal-body .font-pixel.text-xs { font-size: 10px; line-height: 1.7; }
+  .modal-body h2.font-pixel { font-size: 15px; }
+  .modal-body h3.font-pixel.text-sm { font-size: 12px; }
+}
+
+/* Opened windows (modals, phone, résumé, music, profile): one small, backgroundless button style.
+   The visible mark is small; padding keeps the tap target ~40px. */
+.win-close,
+.win-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 40px; min-height: 40px;
+  background: none; border: 0; padding: 0 10px;
+  color: #fff; opacity: .85; cursor: pointer;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: opacity .12s;
+}
+.win-close:hover, .win-btn:hover, .win-close:active, .win-btn:active { opacity: 1; }
+.win-close { padding: 0; }
+.win-close svg { width: 14px; height: 14px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .8)); }
+.win-btn { font-family: 'Press Start 2P', monospace; font-size: 11px; letter-spacing: .02em; white-space: nowrap; }
+.win-dark { color: #111; text-shadow: none; }
+.win-dark svg { filter: none; }

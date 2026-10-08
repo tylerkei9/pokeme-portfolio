@@ -1,3 +1,4 @@
+import { CloseButton } from './CloseButton'
 /** Tyler's personal playlist — the Music Player reward embeds this. */
 const SPOTIFY_URL = 'https://open.spotify.com/playlist/0b1Tn8qb5XnPmhkfis06V6'
 
@@ -21,18 +22,15 @@ export function SpotifyPlayer({ open, onClose }: { open: boolean; onClose: () =>
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-40 w-[320px] rounded-2xl border border-[#2c5a86] bg-[#16324f] p-2 shadow-[0_4px_0_#0b1c2e] ${open ? '' : 'hidden'}`}
+      className={`fixed z-40 w-[320px] max-w-[calc(100vw-16px)] rounded-2xl border border-[#2c5a86] bg-[#16324f] p-2 shadow-[0_4px_0_#0b1c2e] ${open ? '' : 'hidden'}`}
+      style={{
+        top: 'max(8px, env(safe-area-inset-top))',
+        right: 'max(8px, env(safe-area-inset-right))',
+      }}
     >
       <div className="flex items-center justify-between px-1 pb-1">
         <span className="font-['Pixelify_Sans',monospace] text-[11px] text-[#8fd18f]">♪ Music Player</span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Hide music player"
-          className="grid h-5 w-5 place-items-center rounded text-[#8fb0d8] hover:bg-white/10"
-        >
-          ✕
-        </button>
+        <CloseButton onClick={onClose} label="Hide music player" className="-my-2" />
       </div>
       {src ? (
         <iframe

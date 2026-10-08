@@ -1,7 +1,11 @@
+import { CloseButton } from './CloseButton'
+import { SwipePages, usePhoneLayout } from './SwipePages'
+import type { ReactNode } from 'react'
+import { DashboardViewer } from './DashboardViewer'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGameState } from '../systems/GameState'
 import contentData from '../data/content.json'
-import { EXHIBIT_CARDS, PROJECT_FACTS } from '../data/exhibits'
+import { EXHIBIT_CARDS } from '../data/exhibits'
 
 interface ContentEntry {
   id: string
@@ -34,9 +38,29 @@ function resolveContent(key: string): ContentEntry | undefined {
   return entry
 }
 
+/** Keeps overlay content clear of notches / home indicator. */
+export const SAFE_PAD = {
+  paddingTop: 'max(env(safe-area-inset-top), 8px)',
+  paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
+  paddingLeft: 'max(env(safe-area-inset-left), 8px)',
+  paddingRight: 'max(env(safe-area-inset-right), 8px)',
+} as const
+
+/** Big always-visible close button pinned to the top-right corner (no Escape on a phone). */
+function CloseX({ onClick }: { onClick: () => void }) {
+  return (
+    <CloseButton
+      onClick={onClick}
+      className="absolute z-50"
+      style={{ top: 'max(env(safe-area-inset-top), 4px)', right: 'max(env(safe-area-inset-right), 4px)' }}
+    />
+  )
+}
+
 export function ContentModal() {
   const activeContentId = useGameState((s) => s.activeContentId)
   const closeContent = useGameState((s) => s.closeContent)
+  const phone = usePhoneLayout()
 
   if (!activeContentId) return null
 
@@ -55,15 +79,40 @@ export function ContentModal() {
 
   const content = resolveContent(activeContentId)
 
+  // Phones: split multi-block content into swipeable pages (each page scrolls vertically).
+  const pages = phone && content ? contentPages(content) : null
+  if (pages && pages.length > 1 && content) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center z-40 bg-black/60" style={SAFE_PAD} onClick={closeContent}>
+        <CloseX onClick={closeContent} />
+        <div
+          className="bg-gray-900 border-2 border-gray-600 rounded-lg p-3 w-full flex flex-col modal-body max-w-2xl"
+          style={{ marginTop: 56, height: 'calc(100% - 56px)' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="font-pixel text-lg text-white mb-1 shrink-0">{content.title}</h2>
+          <p className="font-pixel text-xs text-gray-400 mb-2 shrink-0">{content.description}</p>
+          <SwipePages
+            pages={pages}
+            footer={<button onClick={closeContent} className="win-btn">Close</button>}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="absolute inset-0 flex items-center justify-center z-40 bg-black/60"
+      style={SAFE_PAD}
       onClick={closeContent}
     >
+      <CloseX onClick={closeContent} />
       <div
-        className={`bg-gray-900 border-2 border-gray-600 rounded-lg p-6 w-full mx-4 overflow-y-auto ${
-          content?.type === 'video' ? 'max-w-6xl max-h-[94vh]' : content?.type === 'resume' || content?.type === 'projects' ? 'max-w-2xl max-h-[85vh]' : 'max-w-lg max-h-[80vh]'
+        className={`bg-gray-900 border-2 border-gray-600 rounded-lg p-4 sm:p-6 w-full overflow-y-auto overscroll-contain modal-body max-h-full ${
+          content?.type === 'video' ? 'max-w-6xl' : content?.type === 'resume' || content?.type === 'projects' ? 'max-w-2xl' : 'max-w-lg'
         }`}
+        style={{ WebkitOverflowScrolling: 'touch', marginTop: 56, maxHeight: 'calc(100% - 56px)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {content ? (
@@ -95,13 +144,57 @@ export function ContentModal() {
 
         <button
           onClick={closeContent}
-          className="font-pixel text-xs text-gray-400 hover:text-white mt-4 underline"
+          className="win-btn mt-2 self-center"
         >
           Close
         </button>
       </div>
     </div>
   )
+}
+
+/** Phone pages for a content entry: one per résumé section / project block / photo. */
+function contentPages(content: ContentEntry): ReactNode[] | null {
+  const d = content.data
+  if (content.type === 'resume') {
+    const secs: any[] = d.sections ?? []
+    return secs.map((s, i) => (
+      <div key={i} className="pr-1">
+        <ResumeContent data={{ sections: [s], downloadUrl: i === secs.length - 1 ? d.downloadUrl : undefined }} />
+      </div>
+    ))
+  }
+  if (content.type === 'projects') {
+    const projs: any[] = d.projects ?? []
+    return projs.flatMap((p, i) => {
+      if (!(p.items?.length > 0)) return [<div key={i} className="pr-1"><ProjectsContent data={{ projects: [p] }} /></div>]
+      return [
+        <div key={`${i}a`} className="pr-1">
+          <ProjectsContent data={{ projects: [{ ...p, items: [], url: undefined }] }} />
+        </div>,
+        <div key={`${i}b`} className="pr-1">
+          <h3 className="font-pixel text-sm text-white mb-2">{p.name}</h3>
+          <ul className="list-disc list-outside ml-4 space-y-2">
+            {p.items.map((item: string, j: number) => (
+              <li key={j} className="font-pixel text-xs text-gray-300 leading-relaxed">{item}</li>
+            ))}
+          </ul>
+          {p.url && p.url !== '#' && (
+            <a href={p.url} className="win-btn mt-2" target="_blank" rel="noopener noreferrer">View Project →</a>
+          )}
+        </div>,
+      ]
+    })
+  }
+  if (content.type === 'photos') {
+    return (d.photos ?? []).map((photo: any, i: number) => (
+      <div key={i} className="pr-1">
+        <img src={photo.src} alt={photo.caption} className="w-full rounded mb-1" />
+        <p className="font-pixel text-xs text-gray-400">{photo.caption}</p>
+      </div>
+    ))
+  }
+  return null
 }
 
 function ResumeContent({ data }: { data: any }) {
@@ -126,7 +219,7 @@ function ResumeContent({ data }: { data: any }) {
       {data.downloadUrl && (
         <a
           href={data.downloadUrl}
-          className="font-pixel text-xs text-blue-400 hover:text-blue-300 underline"
+          className="win-btn"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -163,7 +256,7 @@ function ProjectsContent({ data }: { data: any }) {
             ))}
           </div>
           {proj.url && proj.url !== '#' && (
-            <a href={proj.url} className="font-pixel text-xs text-blue-400 underline mt-2 block" target="_blank" rel="noopener noreferrer">
+            <a href={proj.url} className="win-btn mt-2" target="_blank" rel="noopener noreferrer">
               View Project →
             </a>
           )}
@@ -200,21 +293,21 @@ function VideoContent({ data }: { data: any }) {
         controls
         autoPlay
         playsInline
-        className="w-full max-h-[80vh] object-contain rounded bg-black mx-auto"
+        className="w-full max-h-[70dvh] object-contain rounded bg-black mx-auto"
       />
       <p className="font-pixel text-xs text-gray-400 text-center">{clip.caption}</p>
       {clips.length > 1 && (
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={() => setI((n) => (n - 1 + clips.length) % clips.length)}
-            className="font-pixel text-xs text-gray-400 hover:text-white underline"
+            className="win-btn"
           >
             ← Prev
           </button>
           <span className="font-pixel text-[10px] text-gray-500">{i + 1} / {clips.length}</span>
           <button
             onClick={() => setI((n) => (n + 1) % clips.length)}
-            className="font-pixel text-xs text-gray-400 hover:text-white underline"
+            className="win-btn"
           >
             Next →
           </button>
@@ -254,7 +347,7 @@ const EASE_MS = 460
  * `close` that plays the exit first. Escape is caught here (before the app's own handler) so
  * it animates out too.
  */
-function useEased(onClose: () => void) {
+export function useEased(onClose: () => void) {
   const [shown, setShown] = useState(false)
   const closing = useRef(false)
   useEffect(() => {
@@ -285,71 +378,13 @@ function useEased(onClose: () => void) {
   return { close, backdrop, panel }
 }
 
-/** A project's dashboard app, full-screen in an iframe. */
-function DashboardViewer({ url, onClose }: { url: string; onClose: () => void }) {
-  const { close, backdrop, panel } = useEased(onClose)
-  const facts = PROJECT_FACTS[url]
-  return (
-    <div className="absolute inset-0 flex items-center justify-center z-40 bg-black/60" style={backdrop} onClick={close}>
-      <div
-        className="bg-gray-900 border-2 border-gray-600 rounded-lg p-2 w-[96vw] h-[94vh] flex flex-col"
-        style={panel}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {facts && (
-          <div className="mb-2 flex items-start justify-between gap-4 px-2 pt-1 font-trainer">
-            <div className="min-w-0">
-              <p className="text-base text-white">
-                {facts.title}
-                <span className="ml-3 text-sm text-gray-300">{facts.what}</span>
-              </p>
-              <p className="mt-0.5 text-xs leading-relaxed text-gray-400">
-                <span className="text-[#ff6b6b]">Role</span> {facts.role}
-                <span className="ml-4 text-[#ff6b6b]">Result</span> {facts.result}
-                <span className="ml-4 text-[#ff6b6b]">Stack</span> {facts.stack}
-              </p>
-            </div>
-            {facts.github && (
-              <a href={facts.github} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-md border-2 border-black bg-white px-3 py-1 text-xs text-black hover:bg-[#DCDCDC]">
-                GitHub
-              </a>
-            )}
-          </div>
-        )}
-        <iframe
-          src={url}
-          title="Project dashboard"
-          className="flex-1 w-full rounded bg-white"
-          onLoad={(e) => {
-            // Once a visitor clicks into a dashboard it has the keyboard, so the game never sees
-            // Escape. The dashboards are served from this same site, so listen inside them too,
-            // unless the dashboard used Escape itself (e.g. to close one of its own panels).
-            try {
-              e.currentTarget.contentWindow?.addEventListener('keydown', (k) => {
-                if (k.key === 'Escape' && !k.defaultPrevented) close()
-              })
-            } catch { /* a dashboard on another site can't be listened to; the Close button still works */ }
-          }}
-        />
-        <div className="flex items-center justify-between mt-2 px-1">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="font-pixel text-xs text-blue-400 hover:text-blue-300 underline">
-            Open in new tab
-          </a>
-          <button onClick={close} className="font-pixel text-xs text-gray-400 hover:text-white underline">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 /** A Hall of Fame monument's photo: just the photo, centred, easing in. Click anywhere to close. */
 function PhotoViewer({ src, onClose }: { src: string; onClose: () => void }) {
   const { close, backdrop, panel } = useEased(onClose)
   return (
-    <div className="absolute inset-0 z-40 flex cursor-zoom-out items-center justify-center bg-black/60 p-6" style={backdrop} onClick={close}>
-      <img src={src} alt="" style={panel} className="max-h-[80vh] max-w-[80vw] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.5)]" />
+    <div className="absolute inset-0 z-40 flex cursor-zoom-out items-center justify-center bg-black/60" style={{ ...backdrop, ...SAFE_PAD, paddingTop: 'max(env(safe-area-inset-top), 64px)' }} onClick={close}>
+      <CloseX onClick={close} />
+      <img src={src} alt="" style={panel} className="max-h-full max-w-full object-contain rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.5)]" />
     </div>
   )
 }
@@ -357,10 +392,59 @@ function PhotoViewer({ src, onClose }: { src: string; onClose: () => void }) {
 /** An exhibit's card (Eli Lilly, How I built this), in the profile's Poké Ball colours. */
 function ExhibitCardViewer({ card, onClose }: { card: (typeof EXHIBIT_CARDS)[string]; onClose: () => void }) {
   const { close, backdrop, panel } = useEased(onClose)
+  const phone = usePhoneLayout()
+  if (phone && (card.items.length > 3 || card.items.length + (card.stack ? 1 : 0) + (card.links?.length ?? 0) > 4)) {
+    // Phone: header stays put; bullets, then stack + links, swipe as pages.
+    const chunks: string[][] = []
+    const per = card.items.length > 5 ? Math.ceil(card.items.length / 2) : card.items.length
+    for (let i = 0; i < card.items.length; i += per) chunks.push(card.items.slice(i, i + per))
+    const pages: ReactNode[] = chunks.map((c, i) => (
+      <ul key={i} className="list-disc space-y-2 py-3 pl-5 pr-1 text-[14px] leading-relaxed text-black">
+        {c.map((it) => <li key={it}>{it}</li>)}
+      </ul>
+    ))
+    if (card.stack || card.links?.length) {
+      pages.push(
+        <div key="meta" className="py-3 pr-1 text-black">
+          {card.stack && (
+            <p className="text-sm text-black/70"><span className="text-[#B22222]">Stack</span> {card.stack}</p>
+          )}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {card.links?.map((l) => (
+              <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="win-btn win-dark">{l.label}</a>
+            ))}
+          </div>
+        </div>,
+      )
+    }
+    return (
+      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60" style={{ ...backdrop, ...SAFE_PAD, paddingTop: 'max(env(safe-area-inset-top), 64px)' }} onClick={close}>
+        <CloseX onClick={close} />
+        <div
+          className="flex h-full max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border-4 border-black bg-white font-trainer shadow-[0_8px_0_rgba(0,0,0,0.5)]"
+          style={panel}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="shrink-0 bg-gradient-to-b from-[#FF0000] to-[#B22222] px-4 pb-3 pt-3 text-white">
+            <h2 className="about-name text-2xl">{card.title}</h2>
+            <p className="mt-1 text-xs text-white/90">
+              {card.subtitle}
+              {card.dates && <span className="ml-2 text-white/75">{card.dates}</span>}
+            </p>
+          </div>
+          <div className="h-2 shrink-0 bg-black" />
+          <div className="flex min-h-0 flex-1 flex-col px-4 pb-1">
+            <SwipePages dark pages={pages} footer={<button onClick={close} className="win-btn win-dark">Close</button>} />
+          </div>
+        </div>
+      </div>
+    )
+  }
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4" style={backdrop} onClick={close}>
+    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60" style={{ ...backdrop, ...SAFE_PAD, paddingTop: 'max(env(safe-area-inset-top), 64px)' }} onClick={close}>
+      <CloseX onClick={close} />
       <div
-        className="w-full max-w-2xl overflow-hidden rounded-lg border-4 border-black bg-white font-trainer shadow-[0_8px_0_rgba(0,0,0,0.5)]"
+        className="w-full max-w-2xl max-h-full overflow-y-auto overscroll-contain rounded-lg border-4 border-black bg-white font-trainer shadow-[0_8px_0_rgba(0,0,0,0.5)]"
         style={panel}
         onClick={(e) => e.stopPropagation()}
       >
@@ -384,12 +468,12 @@ function ExhibitCardViewer({ card, onClose }: { card: (typeof EXHIBIT_CARDS)[str
           <div className="mt-4 flex items-center justify-between">
             <div className="flex gap-2">
               {card.links?.map((l) => (
-                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="rounded-md border-2 border-black bg-[#FF0000] px-3 py-1 text-sm text-white shadow-[0_2px_0_#000] hover:bg-[#B22222]">
+                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="win-btn win-dark">
                   {l.label}
                 </a>
               ))}
             </div>
-            <button onClick={close} className="text-sm text-black/60 underline hover:text-black">Close</button>
+            <button onClick={close} className="win-btn win-dark">Close</button>
           </div>
         </div>
       </div>
