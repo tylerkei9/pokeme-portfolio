@@ -367,6 +367,60 @@
     100% { fill: var(--border-strong); }
   }
   @media (prefers-reduced-motion: reduce) { .loading-seg, .loading-arrow { animation: none; } }
+
+  /* ---------- landscape phone / short viewports (desktop unaffected) ---------- */
+  @media (max-height: 520px) {
+    button, select, input, summary, .node-circle { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    body { padding: 6px 8px 14px; overflow-x: visible; }
+    .wrap { gap: 6px; }
+    .app-header h1 { font-size: 16px; }
+    .app-header p { display: none; }
+    .control-hint { font-size: 10px; margin: 0; }
+    .card, .controls-card { border-radius: 8px; box-shadow: none; }
+    .card-head, .top-row .card-head { padding: 4px 10px; min-height: 28px; }
+    .card-head h2, .top-row .card-head h2 { font-size: 12px; }
+    .card-body, .top-row .card-body { padding: 6px 10px; }
+    .about-card .card-body p { font-size: 11.5px; line-height: 1.35; }
+    .about-card > summary.card-head { padding: 4px 10px; min-height: 36px; }
+    .top-row, .top-row-col { gap: 6px; }
+    .controls-card, .top-row .controls-card { padding: 6px 8px; gap: 5px; }
+    .control-row, .top-row .control-row { gap: 4px 10px; }
+    .control-group, .top-row .control-group { gap: 2px; }
+    .control-group label, .top-row .control-group label { font-size: 9.5px; }
+    select.song-select, .top-row select.song-select { min-height: 36px; padding: 4px 8px; font-size: 12.5px; min-width: 160px; }
+    .segmented button, .hand-tabs button, .top-row .segmented button, .top-row .hand-tabs button { min-height: 34px; padding: 4px 10px; font-size: 11.5px; }
+    .chip-row, .top-row .chip-row { gap: 4px; }
+    .chip, .top-row .chip { padding: 2px 6px; }
+    #inspectorBody { max-height: 110px; }
+    .inspector-clear { min-height: 28px; padding: 3px 10px; }
+    #summaryCard .stat-tile { padding: 3px 5px; }
+    #summaryCard .stat-tile .v { font-size: 12px; }
+    #summaryCard .stat-tile .l { font-size: 8.5px; }
+    /* keep transport controls reachable while scrolling the charts */
+    .playbar {
+      position: sticky; top: 0; z-index: 20; background: var(--surface-card);
+      padding: 4px 10px; gap: 6px 10px; border-radius: 8px 8px 0 0;
+    }
+    .playbar button.transport { width: 40px; height: 36px; }
+    .playbar input[type="range"] { min-width: 120px; height: 28px; }
+    .playbar .step-readout { font-size: 11px; min-width: 76px; }
+    .ghost-toggle { font-size: 11px; min-height: 32px; gap: 5px; }
+    .ghost-toggle input { width: 18px; height: 18px; margin: 0; }
+    .legend-row { padding: 4px 10px 0 !important; gap: 4px 10px; font-size: 10.5px; }
+    .roll-wrap { padding: 4px 10px 8px; }
+    .unplayable p { font-size: 12px; line-height: 1.4; }
+
+    /* loading overlay: fit 920x~400 without scrolling */
+    .loading-screen { gap: 6px; padding: 8px 16px; overflow-y: auto; }
+    .loading-inner { gap: 6px; }
+    .loading-title { font-size: 13px; }
+    .loading-pipeline { width: auto; max-width: min(92vw, 600px); height: min(34vh, 150px); }
+    .loading-label { font-size: 11px; }
+    .loading-enter-btn { min-height: 40px; padding: 8px 26px; }
+  }
+
+  .tap-tip { position: fixed; z-index: 100; max-width: 220px; padding: 6px 9px; border-radius: 6px; font-size: 11.5px; line-height: 1.35;
+    background: var(--surface-card, #1b2227); color: var(--text-primary, #fff); border: 1px solid var(--border-strong, #556); box-shadow: 0 4px 14px rgba(0,0,0,0.5); pointer-events: none; }
 </style>
 
 <div class="loading-screen" id="loadingScreen">
@@ -492,7 +546,7 @@
   <aside class="card" id="inspectorCard">
     <div class="card-head">
       <h2>Inspector</h2>
-      <button id="inspectorClear" class="inspector-clear" title="Clear selection (Esc)" style="display:none;">✕ clear</button>
+      <button id="inspectorClear" class="inspector-clear" title="Clear selection (Esc)" style="display:none;">Clear</button>
     </div>
     <div class="card-body" id="inspectorBody">
       <p class="inspector-empty">Select a position to inspect it.</p>
@@ -513,10 +567,10 @@
       <div id="playableView">
         <div class="playbar">
           <div class="btns">
-            <button class="transport" id="btnReset" title="Reset">⏮</button>
-            <button class="transport" id="btnStepBack" title="Step back">◀</button>
-            <button class="transport play" id="btnPlay" title="Play">▶</button>
-            <button class="transport" id="btnStepFwd" title="Step forward">▶│</button>
+            <button class="transport" id="btnReset" title="Reset"><svg viewBox="0 0 10 10" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><rect x="1" y="1" width="2" height="8"/><path d="M9 1L4 5l5 4z"/></svg></button>
+            <button class="transport" id="btnStepBack" title="Step back"><svg viewBox="0 0 10 10" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><path d="M8 1L2 5l6 4z"/></svg></button>
+            <button class="transport play" id="btnPlay" title="Play"><svg viewBox="0 0 10 10" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><path d="M2 1l7 4-7 4z"/></svg></button>
+            <button class="transport" id="btnStepFwd" title="Step forward"><svg viewBox="0 0 10 10" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><path d="M1 1l6 4-6 4z"/><rect x="8" y="1" width="2" height="8"/></svg></button>
           </div>
           <input type="range" id="scrubber" min="0" max="0" value="0" step="1">
           <span class="step-readout" id="stepReadout">-</span>
@@ -554,6 +608,11 @@
 <script>
 (function () {
   "use strict";
+
+  // Short (landscape phone) viewport: start with the About card collapsed so the controls and charts lead.
+  try {
+    if (window.innerHeight <= 520) { var ab = document.querySelector(".about-card"); if (ab) ab.removeAttribute("open"); }
+  } catch (e) {}
 
   // Populated at boot from DATA._song_labels once data.json loads (see buildSongsList).
   var SONGS = [];
@@ -1026,7 +1085,9 @@
     var outer = el("trellisOuter");
     if (!outer || !cache.height) return;
     // Sized as if the controls row were its original single-line height; extra top content just scrolls the page.
-    var remaining = Math.max(360, window.innerHeight - 200 - 110);
+    var short = window.innerHeight <= 520;
+    // Short (landscape phone) viewports: top cards are compact and the playbar is sticky, so give the charts ~the full viewport.
+    var remaining = short ? Math.max(280, window.innerHeight - 70) : Math.max(360, window.innerHeight - 200 - 110);
     var rollNatH = ROLL_FALL_H + 4 + 128 + 14;
     TS = Math.max(0.5, Math.min(2.5, (remaining * 0.55) / cache.height));
     RS = Math.max(0.35, Math.min(1.5, (remaining * 0.45) / rollNatH));
@@ -1234,7 +1295,7 @@
       var speedVal = stepIdx === 0 ? 0 : (rKept ? rKept.velocity_penalty : null);
       var delta = (!unreachable && finalCost !== null && finalCost !== undefined) ? (r.cost - finalCost) : null;
       html += '<tr class="' + (rFinal ? "kept" : rSelected ? "selected" : "") + '">' +
-        "<td>" + noteName(r.pos) + (rFinal ? " ★" : "") + (r.pos === pos ? " ●" : "") + "</td>" +
+        "<td>" + noteName(r.pos) + (rFinal ? " (final)" : "") + (r.pos === pos ? " ●" : "") + "</td>" +
         "<td>" + fromLabel + "</td>" +
         "<td>" + fmt(moveVal) + "</td>" +
         "<td>" + fmt(speedVal) + "</td>" +
@@ -1559,7 +1620,7 @@
     state.playing = false;
     if (state.playRAF) { cancelAnimationFrame(state.playRAF); state.playRAF = null; }
     stopAudio();
-    el("btnPlay").textContent = "▶";
+    el("btnPlay").innerHTML = '<svg viewBox="0 0 10 10" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><path d="M2 1l7 4-7 4z"/></svg>';
     el("btnPlay").classList.remove("play");
   }
 
@@ -1573,7 +1634,7 @@
       applyReveal(); // hide the fully-grown resting view before regrowing from the start
     }
     state.playing = true;
-    el("btnPlay").textContent = "❙❙";
+    el("btnPlay").innerHTML = '<svg viewBox="0 0 10 10" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><rect x="2" y="1" width="2.2" height="8"/><rect x="5.8" y="1" width="2.2" height="8"/></svg>';
     el("btnPlay").classList.add("play");
 
     var clockStart = performance.now();
@@ -1683,6 +1744,45 @@
     document.addEventListener("keydown", function (ev) {
       if (ev.key === "Escape" && state.pinned) unpinNode();
     });
+    // ---- touch / short-viewport affordances (desktop unchanged) ----
+    var touchMode = window.innerHeight <= 520 || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+    if (touchMode) {
+      var HIT_R = 22; // ~44 CSS px diameter invisible hit area
+      var tipEl = null;
+      var hideTip = function () { if (tipEl) { tipEl.remove(); tipEl = null; } };
+      // Nearest visible node within HIT_R of the tap wins; empty space unpins.
+      el("trellisSvg").addEventListener("click", function (ev) {
+        var best = null, bd = HIT_R * HIT_R;
+        el("trellisSvg").querySelectorAll(".node-circle.show").forEach(function (n) {
+          var r = n.getBoundingClientRect();
+          var dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+          var d = dx * dx + dy * dy;
+          if (d <= bd) { bd = d; best = n; }
+        });
+        ev.stopPropagation();
+        if (best) {
+          var si = +best.getAttribute("data-step"), po = +best.getAttribute("data-pos");
+          onClickNode(si, po); // tapping the already-pinned node toggles it off, like a click
+        } else if (state.pinned) unpinNode();
+      }, true);
+      // title= tooltips become tap popovers; next tap dismisses.
+      document.addEventListener("click", function (ev) {
+        var had = !!tipEl; hideTip();
+        var t = ev.target.closest && ev.target.closest("th[title], .stat-tile[title], [data-tip]");
+        if (!t) return;
+        if (t.hasAttribute("title")) { t.setAttribute("data-tip", t.getAttribute("title")); t.removeAttribute("title"); }
+        if (had) return;
+        tipEl = document.createElement("div");
+        tipEl.className = "tap-tip";
+        tipEl.textContent = t.getAttribute("data-tip");
+        document.body.appendChild(tipEl);
+        var r = t.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+        var left = Math.max(6, Math.min(window.innerWidth - w - 6, r.left + r.width / 2 - w / 2));
+        var top = r.bottom + 4 + h > window.innerHeight - 4 ? Math.max(4, r.top - h - 4) : r.bottom + 4;
+        tipEl.style.left = left + "px"; tipEl.style.top = top + "px";
+      }, true);
+      window.addEventListener("scroll", hideTip, true);
+    }
     el("trellisSvg").addEventListener("click", function (ev) {
       if (ev.target === el("trellisSvg") && state.pinned) unpinNode();
     });
