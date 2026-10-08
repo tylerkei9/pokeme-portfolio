@@ -80,9 +80,17 @@ export class Engine {
   private raf = 0
   private last = 0
   private held = new Map<Dir, number>()
-  private runHeld = false
+  private keyRun = false
+  private swipeRun = false
+  private get runHeld() {
+    return this.keyRun || this.swipeRun
+  }
   private aQueued = false
   private bQueued = false
+  private swipeDir: Dir | null = null
+  private redraw = true
+  /** Tap-to-walk: steps still to take, and the direction to face + interact once there. */
+  private path: { steps: Dir[]; face: Dir | null } | null = null
   /** Direction presses not yet consumed by a menu (choice box / bottom screen). */
   private dirQueue: Dir[] = []
   private battle: Battle | null = null
@@ -133,6 +141,7 @@ export class Engine {
   resize(w: number, h: number) {
     this.viewW = w
     this.viewH = h
+    this.redraw = true
     this.renderer.setSize(w * RENDER_SCALE, h * RENDER_SCALE, false)
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
@@ -177,7 +186,7 @@ export class Engine {
 
   /** True while a dialogue/system text box is on screen (waiting on the A button). */
   isTextOpen() {
-    return this.hud?.open ?? false
+    return (this.hud?.open || this.hud?.choosing) ?? false
   }
 
   /** Show a message from outside the game (e.g. the controls help). */
@@ -435,6 +444,14 @@ export class Engine {
     const dt = this.last ? Math.min(0.05, (t - this.last) / 1000) : 0
     this.last = t
     this.update(dt)
+    // While a window (dashboard, photo, phone...) covers the game, don't spend the frame
+    // redrawing it: the canvases keep the last picture, and the window's scrolling gets the GPU.
+    // A resize clears the canvas, so draw once more after one.
+    if (this.hooks.isPaused() && !this.redraw) {
+      this.raf = requestAnimationFrame(this.frame)
+      return
+    }
+    this.redraw = false
     if (this.battle) this.renderer.render(this.battle.scene, this.battle.camera)
     else this.renderer.render(this.scene, this.camera)
     this.hud.render()
@@ -539,9 +556,15 @@ export class Engine {
 
   private handleExplore(aPressed: boolean) {
     if (aPressed) {
+      this.path = null
       this.interact()
       return
     }
+    if (this.path && !this.currentDir()) {
+      this.followPath(this.path)
+      return
+    }
+    this.path = null
     const dir = this.currentDir()
     if (!dir) {
       this.player.setSheet(this.assets.sheets.heroWalk)
@@ -555,6 +578,154 @@ export class Engine {
       this.player.face(dir)
       return
     }
+    this.tryMove(dir)
+  }
+
+  /**
+   * A finger dragged on the view acts like a held arrow key (and a long drag like holding B to
+   * run). Call with null when the finger lifts. Also moves the cursor of YES/NO boxes.
+   */
+  swipe(dir: Dir | null, run = false) {
+    if (this.hooks.isPaused()) dir = null
+    this.swipeRun = dir !== null && run
+    if (dir === this.swipeDir) return
+    if (this.swipeDir) this.held.delete(this.swipeDir)
+    this.swipeDir = dir
+    if (dir) {
+      this.path = null
+      this.held.set(dir, performance.now())
+      this.dirQueue.push(dir)
+    }
+  }
+
+  // ── tap to move / interact ────────────────────────────────────────────────
+
+  /**
+   * A tap on the game view at (nx, ny), each 0..1 across the view. Advances text, picks a
+   * YES/NO option, or walks to the tapped spot and interacts with whatever is there.
+   */
+  tap(nx: number, ny: number) {
+    if (!this.hud || this.hooks.isPaused()) return
+    if (this.hud.choosing) {
+      const i = this.hud.choiceAt(nx * this.viewW, ny * this.viewH)
+      if (i !== null) {
+        this.hud.setChoice(i)
+        this.aQueued = true
+      }
+      return
+    }
+    if (this.hud.open) {
+      this.aQueued = true
+      return
+    }
+    // a tap mid-walk re-routes: the player's tile is already the one they're stepping onto
+    if (this.mode !== 'explore' || this.battle || (this.player.moving && !this.path)) return
+    const ground = this.tileAt(nx, ny)
+    if (!ground) return
+    // a tapped figure's head is drawn over the tile behind it, so prefer the tile just below
+    const target = [ground, { x: ground.x, y: ground.y + 1 }].find((t) => this.interesting(t.x, t.y)) ?? ground
+    this.path = this.planPath(target.x, target.y)
+  }
+
+  /** The floor tile under a point of the view, by casting a ray onto the ground plane. */
+  private tileAt(nx: number, ny: number) {
+    this.camera.updateMatrixWorld()
+    const origin = this.camera.getWorldPosition(new THREE.Vector3())
+    const far = new THREE.Vector3(nx * 2 - 1, -(ny * 2 - 1), 0.5).unproject(this.camera)
+    const dir = far.sub(origin)
+    if (dir.y >= -1e-4) return null
+    const t = -origin.y / dir.y
+    return { x: Math.floor(origin.x + dir.x * t), y: Math.floor(origin.z + dir.z * t) }
+  }
+
+  private warpAt(x: number, y: number) {
+    const def = this.world!.def
+    return !!(def.warps.find((w) => w.x === x && w.y === y) ?? this.extraWarps.find((w) => w.x === x && w.y === y) ?? def.bumps?.find((b) => b.x === x && b.y === y))
+  }
+
+  /** Something A would do: a partner, a trainer/Pokémon, the legendary, a sign or exhibit. */
+  private interesting(x: number, y: number) {
+    return (
+      (this.follower.tx === x && this.follower.ty === y) ||
+      !!this.crowd.at(x, y) ||
+      (this.legend !== null && this.legend.x === x && this.legend.y === y) ||
+      this.world!.def.interactions.some((i) => i.x === x && i.y === y)
+    )
+  }
+
+  /** Breadth-first walk from the player to the tapped tile (or beside it, if it's interactive). */
+  private planPath(tx: number, ty: number) {
+    const start = { x: this.player.tx, y: this.player.ty }
+    const dirs = Object.keys(DIR_VEC) as Dir[]
+    const talk = this.interesting(tx, ty)
+    const exit = this.warpAt(tx, ty)
+    const isGoal = (x: number, y: number) =>
+      talk ? Math.abs(x - tx) + Math.abs(y - ty) === 1 : x === tx && y === ty
+    const open = (x: number, y: number) => !this.blocked(x, y) && !this.warpAt(x, y)
+
+    if (talk) {
+      // already beside it: just turn and interact
+      for (const d of dirs) {
+        const [dx, dy] = DIR_VEC[d]
+        if (start.x + dx === tx && start.y + dy === ty) return { steps: [] as Dir[], face: d }
+      }
+    }
+    const prev = new Map<string, { from: string; dir: Dir } | null>([[`${start.x},${start.y}`, null]])
+    const queue = [start]
+    for (let qi = 0; qi < queue.length && queue.length < 5000; qi++) {
+      const cur = queue[qi]
+      if ((cur.x !== start.x || cur.y !== start.y) && isGoal(cur.x, cur.y) && open(cur.x, cur.y)) {
+        const steps: Dir[] = []
+        let k = `${cur.x},${cur.y}`
+        for (let e = prev.get(k); e; e = prev.get(k)) {
+          steps.unshift(e.dir)
+          k = e.from
+        }
+        let face: Dir | null = null
+        if (talk) face = dirs.find((d) => cur.x + DIR_VEC[d][0] === tx && cur.y + DIR_VEC[d][1] === ty) ?? null
+        return { steps, face }
+      }
+      for (const d of dirs) {
+        const nx = cur.x + DIR_VEC[d][0]
+        const ny = cur.y + DIR_VEC[d][1]
+        const key = `${nx},${ny}`
+        if (prev.has(key)) continue
+        const goalWarp = exit && nx === tx && ny === ty
+        if (!open(nx, ny) && !goalWarp) continue
+        prev.set(key, { from: `${cur.x},${cur.y}`, dir: d })
+        if (goalWarp) {
+          const steps: Dir[] = []
+          let k = key
+          for (let e = prev.get(k); e; e = prev.get(k)) {
+            steps.unshift(e.dir)
+            k = e.from
+          }
+          return { steps, face: null }
+        }
+        queue.push({ x: nx, y: ny })
+      }
+    }
+    return null
+  }
+
+  private followPath(p: { steps: Dir[]; face: Dir | null }) {
+    const dir = p.steps[0]
+    if (!dir) {
+      this.path = null
+      if (p.face) {
+        this.player.face(p.face)
+        this.interact()
+      }
+      return
+    }
+    const [dx, dy] = DIR_VEC[dir]
+    const nx = this.player.tx + dx
+    const ny = this.player.ty + dy
+    if (this.blocked(nx, ny) && !this.warpAt(nx, ny)) {
+      this.path = null // something wandered into the way
+      return
+    }
+    p.steps.shift()
     this.tryMove(dir)
   }
 
@@ -846,13 +1017,14 @@ export class Engine {
   private onKeyDown = (e: KeyboardEvent) => {
     if (this.hooks.isPaused()) return
     const dir = KEY_DIR[e.key]
+    if (dir || A_KEYS.has(e.key)) this.path = null
     if (dir || A_KEYS.has(e.key) || B_KEYS.has(e.key)) e.preventDefault()
     if (dir) this.dirQueue.push(dir)
     if (e.repeat) return
     if (dir) this.held.set(dir, performance.now())
     if (A_KEYS.has(e.key)) this.aQueued = true
     if (B_KEYS.has(e.key)) {
-      this.runHeld = true
+      this.keyRun = true
       this.bQueued = true
     }
   }
@@ -860,11 +1032,11 @@ export class Engine {
   private onKeyUp = (e: KeyboardEvent) => {
     const dir = KEY_DIR[e.key]
     if (dir) this.held.delete(dir)
-    if (B_KEYS.has(e.key)) this.runHeld = false
+    if (B_KEYS.has(e.key)) this.keyRun = false
   }
 
   private onBlur = () => {
     this.held.clear()
-    this.runHeld = false
+    this.keyRun = this.swipeRun = false
   }
 }

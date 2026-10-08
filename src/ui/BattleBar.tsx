@@ -5,7 +5,7 @@ import { rect, shade, type RGB } from '../engine/pixel'
 import { useBottom, type MoveSlot } from '../systems/BottomState'
 
 /** Bar height in virtual (game-scale) pixels. */
-export const BATTLE_BAR_H = 28
+export const BATTLE_BAR_H = 36
 
 interface Button {
   id: string
@@ -17,8 +17,10 @@ interface Button {
   disabled?: boolean
 }
 
+/** Half the gap between buttons: the hit area grows into it so there are no dead strips. */
+const gapHalf = 3
 const BTN_Y = 4
-const BTN_H = 20
+const BTN_H = 28
 const WHITE: RGB = [255, 255, 255]
 
 const COMMANDS: { id: string; label: string; color: RGB }[] = [
@@ -65,49 +67,82 @@ export function BattleBar({ width, scale }: { width: number; scale: number }) {
     const r = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientX - r.left) / r.width) * width
     const y = ((e.clientY - r.top) / r.height) * BATTLE_BAR_H
-    const b = buttons.current.find((b) => !b.disabled && x >= b.x && x < b.x + b.w && y >= BTN_Y && y < BTN_Y + BTN_H)
+    const b = buttons.current.find((b) => !b.disabled && x >= b.x - gapHalf && x < b.x + b.w + gapHalf && y >= 0 && y < BATTLE_BAR_H)
     return b?.id ?? null
   }
 
+  // The canvas sits above the bottom safe area (home indicator); the strip under it is the same navy.
+  // (The wrapper is BATTLE_BAR_H tall, so the canvas overlaps the view's bottom edge by the inset.)
   return (
-    <canvas
-      ref={ref}
-      width={width}
-      height={BATTLE_BAR_H}
-      className="block"
-      style={{ width: width * scale, height: BATTLE_BAR_H * scale, imageRendering: 'pixelated', cursor: hover ? 'pointer' : 'default' }}
-      onMouseMove={(e) => setHover(hit(e))}
-      onMouseLeave={() => setHover(null)}
-      onClick={(e) => {
-        const id = hit(e)
-        if (id && onPick) useBottom.getState().pick(id)
-      }}
-    />
+    <div className="relative shrink-0" style={{ width: width * scale, height: BATTLE_BAR_H * scale, background: 'rgb(0,44,72)' }}>
+      <canvas
+        ref={ref}
+        width={width}
+        height={BATTLE_BAR_H}
+        className="absolute left-0 block"
+        style={{
+          bottom: 'env(safe-area-inset-bottom)',
+          width: width * scale,
+          height: BATTLE_BAR_H * scale,
+          imageRendering: 'pixelated',
+          cursor: hover ? 'pointer' : 'default',
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+        onMouseMove={(e) => setHover(hit(e))}
+        onMouseLeave={() => setHover(null)}
+        onPointerDown={(e) => {
+          if (e.pointerType !== 'mouse') setHover(hit(e as unknown as React.MouseEvent<HTMLCanvasElement>))
+        }}
+        onPointerUp={(e) => {
+          if (e.pointerType !== 'mouse') setTimeout(() => setHover(null), 120)
+        }}
+        onPointerCancel={() => setHover(null)}
+        onClick={(e) => {
+          const id = hit(e)
+          if (id && onPick) useBottom.getState().pick(id)
+        }}
+      />
+    </div>
   )
 }
 
 function layout(font: BitmapFont, mode: string, moves: MoveSlot[], width: number): Button[] {
   const out: Button[] = []
+  const gap = 6
+  // Shrink padding until the row fits (narrow portrait phones).
   const place = (items: Omit<Button, 'x' | 'w'>[], pad: number) => {
-    const widths = items.map((i) => font.width(i.label) + pad * 2)
-    const gap = 6
-    const total = widths.reduce((a, b) => a + b, 0) + gap * (items.length - 1)
-    let x = Math.round((width - total) / 2)
-    items.forEach((it, i) => {
-      out.push({ ...it, x, w: widths[i] })
-      x += widths[i] + gap
+    let p = pad
+    const total = (q: number) => items.reduce((a, i) => a + font.width(i.label) + q * 2, 0) + gap * (items.length - 1)
+    while (p > 2 && total(p) > width - 8) p--
+    let x = Math.max(2, Math.round((width - total(p)) / 2))
+    items.forEach((it) => {
+      const w = font.width(it.label) + p * 2
+      out.push({ ...it, x, w })
+      x += w + gap
     })
   }
   if (mode === 'battleCommand') {
     place(COMMANDS.map((c) => ({ ...c, ink: WHITE })), 16)
   } else if (mode === 'battleMoves') {
-    const slots = [0, 1, 2, 3].map((i) => {
-      const m = moves[i]
-      return m
-        ? { id: `move${i}`, label: `${m.name}  ${m.type.toUpperCase()}  PP ${m.pp}/${m.maxPp}`, color: TYPE_COLORS[m.type] ?? [150, 150, 160], ink: WHITE }
-        : { id: `move${i}`, label: '-', color: [110, 110, 118] as RGB, ink: [70, 70, 76] as RGB, disabled: true }
-    })
-    place([...slots, { id: 'back', label: 'Back', color: [60, 120, 200], ink: WHITE }], 12)
+    // full label, then without the type, then just the name, until the row fits
+    const labels = [
+      (m: MoveSlot) => `${m.name}  ${m.type.toUpperCase()}  PP ${m.pp}/${m.maxPp}`,
+      (m: MoveSlot) => `${m.name}  PP ${m.pp}/${m.maxPp}`,
+      (m: MoveSlot) => m.name,
+    ]
+    const build = (label: (m: MoveSlot) => string) =>
+      [0, 1, 2, 3].map((i) => {
+        const m = moves[i]
+        return m
+          ? { id: `move${i}`, label: label(m), color: TYPE_COLORS[m.type] ?? [150, 150, 160], ink: WHITE }
+          : { id: `move${i}`, label: '-', color: [110, 110, 118] as RGB, ink: [70, 70, 76] as RGB, disabled: true }
+      })
+    const back = { id: 'back', label: 'Back', color: [60, 120, 200] as RGB, ink: WHITE }
+    const fits = (items: { label: string }[]) =>
+      items.reduce((a, i) => a + font.width(i.label) + 24, 0) + gap * (items.length - 1) <= width - 8
+    const slots = labels.map(build).find((s) => fits([...s, back])) ?? build(labels[2])
+    place([...slots, back], 12)
   }
   return out
 }
@@ -121,8 +156,8 @@ function draw(g: CanvasRenderingContext2D, font: BitmapFont, width: number, butt
   const now = new Date()
   const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
   const firstX = buttons.length ? buttons[0].x : width
-  if (firstX > font.width('Tyler Kei') + 16) font.draw(g, 'Tyler Kei', 8, 8, [150, 190, 230], false)
-  if (firstX > font.width(hhmm) + 16) font.draw(g, hhmm, width - 8 - font.width(hhmm), 8, [150, 190, 230], false)
+  if (firstX > font.width('Tyler Kei') + 16) font.draw(g, 'Tyler Kei', 8, 12, [150, 190, 230], false)
+  if (firstX > font.width(hhmm) + 16) font.draw(g, hhmm, width - 8 - font.width(hhmm), 12, [150, 190, 230], false)
 
   for (const b of buttons) {
     const active = hover === b.id && !b.disabled
@@ -130,6 +165,6 @@ function draw(g: CanvasRenderingContext2D, font: BitmapFont, width: number, butt
     roundRect(g, b.x + 1, BTN_Y + 1, b.w - 2, BTN_H - 2, b.color)
     rect(g, b.x + 2, BTN_Y + BTN_H / 2, b.w - 4, BTN_H / 2 - 2, shade(b.color, 0.9))
     const tx = b.x + Math.round((b.w - font.width(b.label)) / 2)
-    font.draw(g, b.label, tx, BTN_Y + 4, b.ink, shade(b.color, 0.5))
+    font.draw(g, b.label, tx, BTN_Y + 8, b.ink, shade(b.color, 0.5))
   }
 }

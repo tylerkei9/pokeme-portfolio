@@ -265,6 +265,10 @@ export class Battle {
 
   resize(w: number, h: number) {
     this.camera.aspect = w / h
+    // Keep the 4:3 horizontal field of view on narrow (portrait) screens so the foe and the
+    // partner, which sit far apart sideways, aren't cropped.
+    const base = 256 / 192
+    this.camera.fov = w / h >= base ? 40 : Math.min(100, (2 * Math.atan((Math.tan((40 * Math.PI) / 360) * base) / (w / h)) * 180) / Math.PI)
     this.camera.updateProjectionMatrix()
   }
 

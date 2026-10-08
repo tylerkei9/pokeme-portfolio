@@ -62,17 +62,63 @@ export class Hud {
   /** Extra layer drawn under the text (the battle HUD). */
   overlay: ((g: CanvasRenderingContext2D) => void) | null = null
 
+  /** CSS px per virtual px, and safe-area insets in virtual px (0 on desktop). */
+  private scale = 1
+  private insetTop = 0
+  private insetBottom = 0
+  private insetRight = 0
+  private probe: HTMLElement | null = null
+  /** Layout reads (clientWidth, getComputedStyle...) force a reflow: only redo them when the window changed. */
+  private measureDirty = true
+  private measuredAt = 0
+
   constructor(private canvas: HTMLCanvasElement, private font: BitmapFont) {
     this.g = canvas.getContext('2d')!
     this.resize(DS_W, DS_H)
+    const dirty = () => { this.measureDirty = true }
+    window.addEventListener('resize', dirty)
+    window.addEventListener('orientationchange', dirty)
   }
 
   resize(w: number, h: number) {
     this.w = w
     this.h = h
+    this.measureDirty = true
     this.canvas.width = w
     this.canvas.height = h
     this.g.imageSmoothingEnabled = false
+  }
+
+  /** Measure CSS scale and the device safe-area insets that overlap the canvas. */
+  private measure() {
+    const cw = this.canvas.clientWidth
+    if (cw > 0) this.scale = cw / this.w
+    let top = 0
+    let bottom = 0
+    let right = 0
+    try {
+      if (!this.probe) {
+        const p = document.createElement('div')
+        p.style.cssText =
+          'position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)'
+        document.body.appendChild(p)
+        this.probe = p
+      }
+      const cs = getComputedStyle(this.probe)
+      const rc = this.canvas.getBoundingClientRect()
+      // only count an inset when the canvas actually reaches that screen edge
+      if (rc.top < 4) top = parseFloat(cs.paddingTop) || 0
+      if (rc.right > window.innerWidth - 4) right = parseFloat(cs.paddingRight) || 0
+      if (rc.bottom > window.innerHeight - 4) bottom = parseFloat(cs.paddingBottom) || 0
+    } catch { /* no DOM probe available */ }
+    this.insetTop = Math.min(24, Math.round(top / this.scale))
+    this.insetBottom = Math.min(24, Math.round(bottom / this.scale))
+    this.insetRight = Math.min(40, Math.round(right / this.scale))
+  }
+
+  /** Tall enough rows to tap with a finger (~44 CSS px). */
+  private get rowH() {
+    return Math.max(LINE_H, Math.min(30, Math.ceil(44 / this.scale)))
   }
 
   private get boxW() {
@@ -181,6 +227,12 @@ export class Hud {
   render() {
     const g = this.g
     g.clearRect(0, 0, this.w, this.h)
+    const now = performance.now()
+    if (this.measureDirty || now - this.measuredAt > 1000) {
+      this.measure()
+      this.measureDirty = false
+      this.measuredAt = now
+    }
     this.overlay?.(g)
     if (this.banner) this.drawBanner(this.banner.text, this.banner.t)
     if (this.dialog) this.drawDialog(this.dialog)
@@ -196,15 +248,15 @@ export class Hud {
     const g = this.g
     const anchor = d.style === 'speech' ? d.anchor() : null
     const top = anchor ? anchor.y < this.h / 2 : false
-    let y = top ? 4 : this.h - BOX_H - 4
+    let y = top ? 4 + this.insetTop : this.h - BOX_H - 4 - this.insetBottom
     let textX = this.boxX + TEXT_PAD_X
     let color: RGB | undefined
     let shadow: boolean | RGB = true
 
     if (d.style === 'battle') {
-      y = this.h - 44
+      y = this.h - 44 - this.insetBottom
       g.fillStyle = 'rgba(36,36,44,0.82)'
-      g.fillRect(0, y, this.w, 44)
+      g.fillRect(0, y, this.w, 44 + this.insetBottom)
       rect(g, 0, y, this.w, 1, [110, 110, 120])
       textX = 10
       color = BATTLE_TEXT
@@ -237,15 +289,35 @@ export class Hud {
     }
   }
 
+  private choiceRect(c: Choice) {
+    const w = Math.max(...c.options.map((o) => this.font.width(o))) + 30
+    const h = c.options.length * this.rowH + 10
+    // Phone layout: the on-screen A/B pad floats over the right of the dialogue box and would
+    // cover (and steal taps from) the YES/NO box, so park it at the screen's right edge.
+    const x = phoneLayout() ? this.w - 6 - this.insetRight - w : this.boxX + this.boxW - w
+    return { x, y: this.h - BOX_H - 8 - this.insetBottom - h, w, h }
+  }
+
+  /** Index of the YES/NO option under a point (in view pixels), or null. Slightly forgiving for fingers. */
+  choiceAt(px: number, py: number) {
+    const c = this.choice
+    if (!c) return null
+    const r = this.choiceRect(c)
+    const m = Math.ceil(8 / this.scale)
+    if (px < r.x - m || px > r.x + r.w + m || py < r.y - m || py > r.y + r.h + m) return null
+    return Math.max(0, Math.min(c.options.length - 1, Math.floor((py - r.y - 5) / this.rowH)))
+  }
+
+  setChoice(i: number) {
+    if (this.choice) this.choice.index = i
+  }
+
   private drawChoice(c: Choice) {
     const g = this.g
-    const w = Math.max(...c.options.map((o) => this.font.width(o))) + 30
-    const h = c.options.length * LINE_H + 10
-    const x = this.boxX + this.boxW - w
-    const y = this.h - BOX_H - 8 - h
+    const { x, y, w, h } = this.choiceRect(c)
     box(g, x, y, w, h, SYSTEM_EDGE, 2)
     c.options.forEach((o, i) => {
-      const ty = y + 6 + i * LINE_H
+      const ty = y + 5 + i * this.rowH + Math.floor((this.rowH - LINE_H) / 2) + 1
       this.font.draw(g, o, x + 18, ty)
       if (i === c.index) {
         for (let k = 0; k < 4; k++) rect(g, x + 8 + k, ty + 2 + k, 1, 9 - k * 2, [82, 82, 90])
@@ -279,10 +351,18 @@ export class Hud {
     const slide = t < 0.25 ? t / 0.25 : t > 2.3 ? (2.6 - t) / 0.3 : 1
     const w = this.font.width(text) + 20
     const x = Math.round(-w + (w + 4) * slide)
-    box(g, x, 4, w, 20, SYSTEM_EDGE, 2)
-    this.font.draw(g, text, x + 10, 8)
+    const by = 4 + this.insetTop
+    box(g, x, by, w, 20, SYSTEM_EDGE, 2)
+    this.font.draw(g, text, x + 10, by + 4)
   }
 }
+
+/** Same test as App's phone layout (touch device, ?touch=1 or a small window). */
+const phoneLayout = () =>
+  window.matchMedia('(pointer: coarse)').matches ||
+  new URLSearchParams(window.location.search).has('touch') ||
+  window.innerWidth < 700 ||
+  window.innerHeight < 500
 
 /** Rectangle with pixel-stepped rounded corners. */
 export function roundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, col: RGB) {

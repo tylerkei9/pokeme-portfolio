@@ -2,7 +2,7 @@
 // components/Taskbar). A compact tray of square icon buttons pinned to the bottom-left of
 // the game, each opened by click or a single hotkey. See that package's README for the
 // design rationale (why it replaced the old full-width labeled bar).
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type TaskbarAction = 'card' | 'profile' | 'phone' | 'skip'
 
@@ -35,6 +35,16 @@ const ITEMS: Item[] = [
   },
 ]
 
+const LAYOUT = {
+  column: 'fixed bottom-3 left-3 z-40 inline-flex w-[46px] flex-col',
+  // touch: the tray is a collapsed bubble that expands upward (see STACK_WRAP)
+  stack: 'inline-flex w-[42px] flex-col',
+} as const
+
+/** Touch: bottom-left, directly above the floating D-pad. */
+const STACK_WRAP =
+  'fixed left-[max(6px,calc(env(safe-area-inset-left)-48px))] bottom-[calc(max(2px,env(safe-area-inset-bottom)-16px)+136px)] z-40 flex flex-col items-start gap-2'
+
 const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable)
 
@@ -43,14 +53,38 @@ const isTyping = (el: EventTarget | null) =>
  * Ahead. Hidden during battle (the bottom bar takes over there); dimmed and
  * inert while a dialogue box is open, matching the design system's `disabled` state.
  */
-export function HudTray({ onAction, disabled = false }: { onAction: (id: TaskbarAction) => void; disabled?: boolean }) {
+export function HudTray({
+  onAction,
+  disabled = false,
+  layout = 'column',
+}: {
+  onAction: (id: TaskbarAction) => void
+  disabled?: boolean
+  /** column: desktop, bottom-left. stack: touch, above the floating D-pad. */
+  layout?: 'column' | 'stack'
+}) {
   const [pressed, setPressed] = useState<TaskbarAction | null>(null)
+  const [open, setOpen] = useState(false)
+  const bubble = layout === 'stack'
+  const wrap = useRef<HTMLDivElement>(null)
+
+  // Touching anything else (the map, the D-pad, a window) or pressing a key folds the menu back up.
+  useEffect(() => {
+    if (!open) return
+    const away = (e: Event) => {
+      if (!wrap.current?.contains(e.target as Node)) setOpen(false)
+    }
+    window.addEventListener('pointerdown', away, true)
+    window.addEventListener('keydown', () => setOpen(false), { once: true })
+    return () => window.removeEventListener('pointerdown', away, true)
+  }, [open])
 
   const fire = useCallback((id: TaskbarAction) => {
     setPressed(id)
     setTimeout(() => setPressed(null), 140)
+    if (bubble) setOpen(false)
     onAction(id)
-  }, [onAction])
+  }, [onAction, bubble])
 
   useEffect(() => {
     if (disabled) return
@@ -66,11 +100,11 @@ export function HudTray({ onAction, disabled = false }: { onAction: (id: Taskbar
     return () => window.removeEventListener('keydown', onKey)
   }, [disabled, fire])
 
-  return (
+  const nav = (
     <nav
       aria-label="Game menu"
       aria-disabled={disabled}
-      className={`fixed bottom-3 left-3 z-40 inline-flex w-[46px] flex-col items-center gap-1.5 rounded-[10px]
+      className={`${LAYOUT[layout]} items-center gap-1.5 rounded-[10px]
         border border-[#2c5a86] bg-[#16324f] p-1.5 font-['Pixelify_Sans',monospace]
         shadow-[0_2px_0_#0b1c2e] transition-opacity ${disabled ? 'opacity-[.55]' : ''}`}
     >
@@ -84,20 +118,22 @@ export function HudTray({ onAction, disabled = false }: { onAction: (id: Taskbar
             aria-label={item.label}
             aria-keyshortcuts={item.key}
             onClick={() => fire(item.id)}
-            className={`group relative grid h-[34px] w-[34px] place-items-center rounded-md bg-[#f6f4ec]
+            className={`group relative grid ${bubble ? 'h-[28px] w-[28px]' : 'h-[34px] w-[34px]'} place-items-center rounded-md bg-[#f6f4ec]
               transition-transform hover:-translate-y-px focus-visible:outline focus-visible:outline-2
               focus-visible:outline-offset-2 focus-visible:outline-[#ffd84a]
               ${isPressed
                 ? 'translate-y-0.5 shadow-none outline outline-2 outline-offset-2 outline-[#ffd84a]'
                 : 'shadow-[inset_0_-2px_0_#d9d5c7] active:translate-y-0.5 active:shadow-none'}`}
           >
-            <span className={`grid h-[22px] w-[22px] place-items-center rounded-[3px] ${item.tile}`}>
-              <svg viewBox="0 0 8 8" className="h-3.5 w-3.5" shapeRendering="crispEdges" aria-hidden>
+            <span className={`grid ${bubble ? 'h-[18px] w-[18px]' : 'h-[22px] w-[22px]'} place-items-center rounded-[3px] ${item.tile}`}>
+              <svg viewBox="0 0 8 8" className={bubble ? 'h-3 w-3' : 'h-3.5 w-3.5'} shapeRendering="crispEdges" aria-hidden>
                 {item.glyph.map(([x, y, w, h], i) => (
                   <rect key={i} x={x} y={y} width={w} height={h} fill="#fff" />
                 ))}
               </svg>
             </span>
+            {!bubble && (
+              <>
             <span aria-hidden className="absolute -bottom-[3px] -right-[3px] grid h-3 min-w-3 place-items-center
               rounded-[3px] border border-[#d9d5c7] bg-[#f6f4ec] px-0.5 text-[9px] font-bold leading-none text-[#5d6470]">
               {item.key}
@@ -107,9 +143,31 @@ export function HudTray({ onAction, disabled = false }: { onAction: (id: Taskbar
               opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
               {item.label} · {item.key}
             </span>
+              </>
+            )}
           </button>
         )
       })}
     </nav>
+  )
+
+  if (!bubble) return nav
+  return (
+    <div ref={wrap} className={STACK_WRAP}>
+      {open && nav}
+      <button
+        type="button"
+        aria-label={open ? 'Close menu' : 'Open menu'}
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className={`grid h-[32px] w-[32px] place-items-center rounded-full border-2 border-[#2c5a86] bg-[#16324f]
+          text-[#cfe0f2] shadow-[0_2px_0_#0b1c2e] transition-opacity active:translate-y-0.5
+          ${disabled ? 'opacity-[.55]' : open ? 'opacity-100' : 'opacity-80'}`}
+      >
+        <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+          {open ? <path d="M3 3l10 10M13 3L3 13" /> : <path d="M2 4h12M2 8h12M2 12h12" />}
+        </svg>
+      </button>
+    </div>
   )
 }
